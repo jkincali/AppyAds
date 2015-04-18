@@ -10,7 +10,7 @@ TroyOzEZStrOut.jar can be obtained <a href="http://troyozis.com/downloads/librar
 ```ruby
   compile files('libs/TroyOzEZStrOut.jar')
 ```
-#Installation the AppyAds library
+#Install the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
   compile 'com.appyads.services:appyads:1.0'
@@ -33,5 +33,5 @@ Please note that the AppyAdManager view has custom attributes.  Because of this,
 ```
 Of course, there are further options available, and intial views can even be embedded within the AppyAdManager view.  Please see the appyads.com developer pages for more information.
 #Setting up Account IDs and Campaign IDs
-All advertising campaigns are initiated through an account at AppyAds.com.  From there, you can sign up for an account and begin to create your own ads, or sign up for ads to be delivered to your app.
+All advertising campaigns are initiated through an account at <a href="appyads.com">AppyAds.com</a>.  From there, you can sign up for an account and begin to create your own ads, or sign up for ads to be delivered to your app.
 
