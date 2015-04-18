@@ -25,7 +25,7 @@ public class AppyAdService {
     public static final int MAX_ERROR_ALLOWANCE = 10;
 	public static final int ERROR_DELAY_LIMIT = 30;
 	public static final int NORMAL_SLEEP_DURATION = 5000;
-    public static final String TROYOZ_NAME_SPACE = "http://schemas.troyoz.info/attributes";
+    public static final String TROYOZ_NAME_SPACE = "http://schemas.appyads.com/attributes";
 	private static final String AD_SERVER_HOST = "data.troyoz.info";
 	private static final int AD_SERVER_PORT = 30000;
 	private static String tozAdServerIP;
