@@ -14,6 +14,17 @@ import android.widget.ViewFlipper;
 
 import java.util.ArrayList;
 
+/**
+ * AppyAd View Manager
+ *
+ * This View is used to display advertising campaign components. Note that although this class
+ * has public methods available, most interactions should be accomplished using the xml layout
+ * file, where values are passed to this class's object via attributes.
+ *
+ * @author Jon DeWeese
+ * @version 1.0
+ * @since 1.0
+ */
 public class AppyAdManager extends ViewFlipper {
 
     private static final String TAG = "AppyAdManager";
@@ -335,6 +346,13 @@ public class AppyAdManager extends ViewFlipper {
         }
     }
 
+    /**
+     * This method defines the index of the advertising element to land on when the campaign
+     * completes its cycling. The view will stay on this index for the remainder of the
+     * activity's lifecycle.
+     *
+     * @param idx String
+     */
     public void setFinalViewIndex(String idx) {
         if (idx != null) {
             try {
