@@ -4,16 +4,31 @@ AppyAds is an Android library easily included into any Android application.  Onc
 #Requirements
 Target build for the Android application should be API 11 or higher.
 
+#Permissions
+The application's manifest should allow the following permissions:
+```ruby
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
 #Dependencies
 The external java library, TroyOzEZStrOut.jar needs to be included in the application.  All requests for advertisement campaigns from the Android device to the AppyAds server must be in a certain format, and this library ensures that format is consistent.
 TroyOzEZStrOut.jar can be obtained <a href="http://troyozis.com/downloads/libraries/TroyOzEZStrOut.jar">here</a>.  Once obtained, place this .jar library in the libs directory of the application and include the following line into the build.gradle file:
 ```ruby
   compile files('libs/TroyOzEZStrOut.jar')
 ```
-#Install the AppyAds library
+#Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
   compile 'com.appyads.services:appyads:1.0'
+```
+So the final edit of the application's dependencies section of the build.gradle file might look something like:
+```ruby
+  dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile files('libs/TroyOzEZStrOut.jar')
+    compile 'com.appyads.services:appyads:1.0'
+}
 ```
 #Use the AppyAds library
 The AppyAds library consists of a sub MVC framework, which controls the advertising campaigns visible to users of the Android application.  Where these ads are placed within the application depends on the desires of the app designer/author/owner. For example, if the author wishes to have ads in a specific Activity within the Android application all that is required is to place a code snippet similar to the following in the layout xml file for that activity:
