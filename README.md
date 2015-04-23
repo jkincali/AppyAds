@@ -30,7 +30,7 @@ So the final edit of the application's dependencies section of the build.gradle 
     compile 'com.appyads.services:appyads:1.0'
 }
 ```
-#Use the AppyAds library
+#Implement AppyAds service functionality
 The AppyAds library consists of a sub MVC framework, which controls the advertising campaigns visible to users of the Android application.  Where these ads are placed within the application depends on the desires of the app designer/author/owner. For example, if the author wishes to have ads in a specific Activity within the Android application all that is required is to place a code snippet similar to the following in the layout xml file for that activity:
 ```ruby
   <com.appyads.services.AppyAdManager
