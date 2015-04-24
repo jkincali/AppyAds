@@ -1,6 +1,9 @@
 package com.appyads.services;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -70,7 +73,7 @@ public class AppyAdService {
     }
 
     private void initializeAdService(Context context) {
-		if (!adThreadRunning) {
+		if (!adThreadRunning && isNetworkAvailable(context)) {
 			new Thread(new AppyAdRetriever()).start();
             adRootDir = context.getFilesDir() + "/AppyAds";
         }
@@ -110,7 +113,24 @@ public class AppyAdService {
 
     // ********************  DNS/TCPIP ******************************
 
-	public static void reSetHostIP() {
+    private boolean checkNetworkPermissions(Context context) {
+        boolean hasNetworkAccess = ((context.checkCallingOrSelfPermission("android.permission.ACCESS_NETWORK_STATE") == PackageManager.PERMISSION_GRANTED) &&
+                (context.checkCallingOrSelfPermission("android.permission.INTERNET") == PackageManager.PERMISSION_GRANTED));
+        if (!hasNetworkAccess) errorOut(TAG,"Application does NOT have INTERNET and/or ACCESS_NETWORK_STATE permissions!!");
+        return (hasNetworkAccess);
+    }
+
+    public boolean isNetworkAvailable(Context context) {
+        if ((context != null) && checkNetworkPermissions(context)) {
+            ConnectivityManager connectivityManager
+                    = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        }
+        return (false);
+    }
+
+    public static void reSetHostIP() {
 		try {
 			tozAdServerIP = InetAddress.getByName(AD_SERVER_HOST).getHostAddress(); 
 		}
