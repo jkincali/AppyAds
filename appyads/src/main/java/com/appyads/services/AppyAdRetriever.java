@@ -45,25 +45,30 @@ public class AppyAdRetriever implements Runnable {
                 AppyAdService.getInstance().debugOut(TAG,"Ad service thread - normal loop. Service is ON. Error count is "+ AppyAdService.getInstance().getErrorCount());
 				if (AppyAdService.getInstance().AdsAreOn()) {
                     if (AppyAdService.getInstance().adsNeedRefreshing()) {
-                        ByteBuffer retBuf;
-                        AppyAdSendServer tgsd = new AppyAdSendServer(AppyAdStatic.GETADSET,
-                                AppyAdService.getInstance().getDefaultTracking() ? "true" : "false",
-                                AppyAdService.getInstance().getAccountID(),
-                                AppyAdService.getInstance().getApplicationID(),
-                                AppyAdService.getInstance().getCampaignID(),
-                                AppyAdService.getInstance().getCustomSpec(),
-                                AppyAdService.getInstance().getUUID(),
-                                AppyAdService.getInstance().getScreenDensity());
-                        retBuf = tgsd.queryServer();
-						if (tgsd.mStatus) {
-							AppyAdService.getInstance().setAdData(retBuf);
-                            AppyAdService.getInstance().initializeCounters();
-							controlRsp = 7;
-						}
-						else {
-							setErrorMsg(1,tgsd.getSpecError());
-							AppyAdService.getInstance().checkMaxErrors();
-						}
+                        if (AppyAdService.getInstance().isNetworkAvailable()) {
+                            ByteBuffer retBuf;
+                            AppyAdSendServer tgsd = new AppyAdSendServer(AppyAdStatic.GETADSET,
+                                    AppyAdService.getInstance().getDefaultTracking() ? "true" : "false",
+                                    AppyAdService.getInstance().getAccountID(),
+                                    AppyAdService.getInstance().getApplicationID(),
+                                    AppyAdService.getInstance().getCampaignID(),
+                                    AppyAdService.getInstance().getCustomSpec(),
+                                    AppyAdService.getInstance().getUUID(),
+                                    AppyAdService.getInstance().getScreenDensity());
+                            retBuf = tgsd.queryServer();
+                            if (tgsd.mStatus) {
+                                AppyAdService.getInstance().setAdData(retBuf);
+                                AppyAdService.getInstance().initializeCounters();
+                                controlRsp = 7;
+                            } else {
+                                setErrorMsg(1, tgsd.getSpecError());
+                                AppyAdService.getInstance().checkMaxErrors();
+                            }
+                        }
+                        else {
+                            setErrorMsg(1, new String[] {"Network access unavailable.",""});
+                            AppyAdService.getInstance().checkMaxErrors();
+                        }
 					}
 
 					if (controlRsp == 7) {

@@ -157,6 +157,7 @@ public class AppyAdManager extends ViewFlipper {
 
         }
 
+        if (tozAdAccountID == null) tozAdAccountID = "undefined";
         if (tozAdCampaignID == null) tozAdCampaignID = "default";
         if (baseViewIndex == null) baseViewIndex = 0;
         if (tozAdCampaignRetrievalInterval == null) tozAdCampaignRetrievalInterval = 0;

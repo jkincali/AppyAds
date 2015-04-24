@@ -53,7 +53,7 @@ public class AppyAdService {
                 debugOut(TAG,"Got Ad response back from server.");
                 switch (msg.what) {
                     case 1:
-                        debugOut(TAG,"Error from Ad server thread.");
+                        errorOut(TAG,"Error from Ad server thread.");
                         showAlert((String[]) msg.obj);
                         break;
                     case 7:
@@ -73,7 +73,7 @@ public class AppyAdService {
     }
 
     private void initializeAdService(Context context) {
-		if (!adThreadRunning && isNetworkAvailable(context)) {
+		if (!adThreadRunning) {
 			new Thread(new AppyAdRetriever()).start();
             adRootDir = context.getFilesDir() + "/AppyAds";
         }
@@ -81,8 +81,8 @@ public class AppyAdService {
 	
 	private void showAlert(String[] msg) {
         if (msg != null) {
-            if (msg.length > 0) debugOut(TAG,""+msg[0]);
-            if (msg.length > 1) debugOut(TAG,""+msg[1]);
+            if (msg.length > 1) errorOut(TAG,msg[0]+" "+msg[1]);
+            else if (msg.length > 0) errorOut(TAG,msg[0]);
         }
 	}
 	
@@ -121,12 +121,20 @@ public class AppyAdService {
         return (hasNetworkAccess);
     }
 
-    public boolean isNetworkAvailable(Context context) {
-        if ((context != null) && checkNetworkPermissions(context)) {
-            ConnectivityManager connectivityManager
-                    = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    public boolean isNetworkAvailable() {
+        if (!mgrStack.empty()) {
+            AppyAdManager toam = mgrStack.peek();
+            if (toam != null) {
+                Context context = toam.getContext();
+                if (context != null) {
+                    if (checkNetworkPermissions(context)) {
+                        ConnectivityManager connectivityManager
+                                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+                        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+                    }
+                }
+            }
         }
         return (false);
     }
@@ -208,7 +216,7 @@ public class AppyAdService {
                     AppyAdManager toam = mgrStack.peek();
                     if (toam != null) {
                         toam.declareNoExternalAdSet();
-                        debugOut(TAG,"No Ad campaign found on server.");
+                        debugOut(TAG,"Unable to retrieve any ad campaigns for account "+toam.getAccountID()+", campaign "+toam.getCampaignID()+".");
                     }
                 }
             }
