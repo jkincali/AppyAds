@@ -117,6 +117,7 @@ public class AppyAdService {
         boolean hasNetworkAccess = ((context.checkCallingOrSelfPermission("android.permission.ACCESS_NETWORK_STATE") == PackageManager.PERMISSION_GRANTED) &&
                 (context.checkCallingOrSelfPermission("android.permission.INTERNET") == PackageManager.PERMISSION_GRANTED));
         if (!hasNetworkAccess) errorOut(TAG,"Application does NOT have INTERNET and/or ACCESS_NETWORK_STATE permissions!!");
+        else debugOut(TAG,"Application permissions ok.");
         return (hasNetworkAccess);
     }
 
