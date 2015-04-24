@@ -497,7 +497,8 @@ public class AppyAdService {
 	
 	public void stopService() {
 		adThreadLooper = false;
-        recurseDeleteFiles(new File(adRootDir));
+        File rootAdDir = new File(adRootDir);
+        if (rootAdDir.exists()) recurseDeleteFiles(rootAdDir);
 	}
 	
 	public boolean AdServiceIsOn() {
