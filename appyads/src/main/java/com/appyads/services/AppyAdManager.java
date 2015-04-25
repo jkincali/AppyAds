@@ -387,7 +387,7 @@ public class AppyAdManager extends ViewFlipper {
     }
 
     public void declareNoExternalAdSet() {
-        markRefreshed();
+       // markRefreshed();
     }
 
     public boolean hasAdCampaign() {
