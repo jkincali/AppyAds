@@ -59,7 +59,7 @@ public class AppyAdRetriever implements Runnable {
                             if (tgsd.mStatus) {
                                 AppyAdService.getInstance().setAdData(retBuf);
                                 if (AppyAdService.getInstance().hasValidAdCampaign()) {
-                                    AppyAdService.getInstance().initializeCounters();
+                                    //AppyAdService.getInstance().initializeCounters();
                                     controlRsp = 7;
                                 }
                                 else {

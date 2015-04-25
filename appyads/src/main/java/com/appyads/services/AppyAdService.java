@@ -203,6 +203,7 @@ public class AppyAdService {
                     ByteArrayInputStream zippedBuffer = new ByteArrayInputStream(bb.array());
                     String adDir = adRootDir + "/" + toam.getCampaignID();
                     if (unpackAds(adDir, zippedBuffer)) {
+                        toam.readyNewCampaign();
                         new AppyAdConfig(toam, adDir, "/AP.xml");
                         toam.markRefreshed();
                         debugOut(TAG,"Set Ad campaign successfully.");

@@ -53,6 +53,9 @@ public class AppyAdManager extends ViewFlipper {
     private int curAd = 0;
     private int baseAd = 0;
     private int lastAd = 0;
+    private int numInitialChildren = 0;
+    private int saveCampaignSize = 0;
+    private boolean reInitializeCampaign = true;
 
     public AppyAdManager(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -215,10 +218,10 @@ public class AppyAdManager extends ViewFlipper {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        int numchildren = getChildCount();
-        AppyAdService.getInstance().debugOut(TAG, "Number of initial placements is " + numchildren);
-        if (numchildren > 0) {
-            for (int i=0; i<numchildren; i++) {
+        numInitialChildren = getChildCount();
+        AppyAdService.getInstance().debugOut(TAG, "Number of initial placements is " + numInitialChildren);
+        if (numInitialChildren > 0) {
+            for (int i=0; i< numInitialChildren; i++) {
                 View cv = this.getChildAt(i);
                 if (cv != null) {
 //                    setAdClickListener(cv);
@@ -231,6 +234,20 @@ public class AppyAdManager extends ViewFlipper {
         }
         else curAd = -1;
         //if (baseViewIndex > baseAd) baseViewIndex = baseAd;
+    }
+
+    public void readyNewCampaign() {
+        reInitializeCampaign = true;
+        saveCampaignSize = tozAdCampaign.size();
+    }
+
+    private void clearExternalAds() {
+        for (int i=numInitialChildren; i<saveCampaignSize; i++) {
+            tozAdCampaign.remove(numInitialChildren);
+            removeViewAt(numInitialChildren);
+        }
+        initializeCounters();
+        reInitializeCampaign = false;
     }
 
     @Override
@@ -316,6 +333,7 @@ public class AppyAdManager extends ViewFlipper {
     }
 
     public void showNextAd() {
+        if (reInitializeCampaign) clearExternalAds();
         int viewCount = getChildCount() - 1;
         AppyAdService.getInstance().debugOut(TAG,"Ad Views Count is "+viewCount+". Indexes: current="+curAd+", base="+baseAd);
         if (viewCount < curAd) {
