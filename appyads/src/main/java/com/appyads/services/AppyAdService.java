@@ -287,6 +287,14 @@ public class AppyAdService {
 
     // ********************* Original Service stuff *******************
 
+    public boolean hasValidAdCampaign() {
+        if (!mgrStack.empty()) {
+            AppyAdManager toam = mgrStack.peek();
+            return ((toam != null) && toam.hasAdCampaign());
+        }
+        else return (false);
+    }
+
     public Integer getInterval() {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
@@ -448,9 +456,13 @@ public class AppyAdService {
     }
 
     public void checkMaxErrors() {
+        checkMaxErrors(1);
+    }
+
+    public void checkMaxErrors(int increment) {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.checkErrorLimit();
+            if (toam != null) toam.checkErrorLimit(increment);
         }
     }
 

@@ -390,6 +390,10 @@ public class AppyAdManager extends ViewFlipper {
         markRefreshed();
     }
 
+    public boolean hasAdCampaign() {
+        return (!tozAdCampaign.isEmpty());
+    }
+
     public void initializeCounters() {
         resetCounters();
         lastAd = tozAdCampaign.size() - 1;
@@ -503,8 +507,8 @@ public class AppyAdManager extends ViewFlipper {
         errorCounter += increment;
     }
 
-    public void checkErrorLimit() {
-        errorCounter++;
+    public void checkErrorLimit(int increment) {
+        errorCounter += increment;
         if (errorCounter >= AppyAdService.getInstance().maxErrors()) {
             setAdProcessing(false);
             // todo ????

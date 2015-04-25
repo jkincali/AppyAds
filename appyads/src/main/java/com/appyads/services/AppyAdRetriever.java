@@ -58,8 +58,14 @@ public class AppyAdRetriever implements Runnable {
                             retBuf = tgsd.queryServer();
                             if (tgsd.mStatus) {
                                 AppyAdService.getInstance().setAdData(retBuf);
-                                AppyAdService.getInstance().initializeCounters();
-                                controlRsp = 7;
+                                if (AppyAdService.getInstance().hasValidAdCampaign()) {
+                                    AppyAdService.getInstance().initializeCounters();
+                                    controlRsp = 7;
+                                }
+                                else {
+                                    setErrorMsg(1, new String[] {"Non-existent Ad Campaign.","Entering holding pattern."});
+                                    AppyAdService.getInstance().checkMaxErrors(AppyAdService.getInstance().maxErrors());
+                                }
                             } else {
                                 setErrorMsg(1, tgsd.getSpecError());
                                 AppyAdService.getInstance().checkMaxErrors();
