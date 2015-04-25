@@ -50,10 +50,10 @@ public class AppyAdService {
         handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                debugOut(TAG,"Got Ad response back from server.");
+                debugOut(TAG,"Handler method received message from Retriever thread.");
                 switch (msg.what) {
                     case 1:
-                        errorOut(TAG,"Error from Ad server thread.");
+                        errorOut(TAG,"Error from AdRetriever thread.");
                         showAlert((String[]) msg.obj);
                         break;
                     case 7:
