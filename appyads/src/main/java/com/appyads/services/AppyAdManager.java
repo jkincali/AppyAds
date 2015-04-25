@@ -329,7 +329,7 @@ public class AppyAdManager extends ViewFlipper {
                         iv.setImageBitmap(toa.mAd);
                         addView(iv, getChildCount());
                         toa.mAd = null;  // No sense in wasting space.
-                        tozAdCampaign.add(toa);
+                        //tozAdCampaign.add(toa);
                         break;
                 }
             }
