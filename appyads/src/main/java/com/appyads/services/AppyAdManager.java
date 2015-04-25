@@ -53,7 +53,8 @@ public class AppyAdManager extends ViewFlipper {
     private int curAd = 0;
     private int baseAd = 0;
     private int lastAd = 0;
-    private int numInitialChildren = 0;
+    private int numInternalChildren = 0;
+    private int numExternalChildren = 0;
     private int saveCampaignSize = 0;
     private boolean reInitializeCampaign = true;
 
@@ -218,10 +219,10 @@ public class AppyAdManager extends ViewFlipper {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        numInitialChildren = getChildCount();
-        AppyAdService.getInstance().debugOut(TAG, "Number of initial placements is " + numInitialChildren);
-        if (numInitialChildren > 0) {
-            for (int i=0; i< numInitialChildren; i++) {
+        numInternalChildren = getChildCount();
+        AppyAdService.getInstance().debugOut(TAG, "Number of initial placements is " + numInternalChildren);
+        if (numInternalChildren > 0) {
+            for (int i=0; i< numInternalChildren; i++) {
                 View cv = this.getChildAt(i);
                 if (cv != null) {
 //                    setAdClickListener(cv);
@@ -238,13 +239,16 @@ public class AppyAdManager extends ViewFlipper {
 
     public void readyNewCampaign() {
         reInitializeCampaign = true;
+        numExternalChildren = tozAdCampaign.size() - numInternalChildren;
         saveCampaignSize = tozAdCampaign.size();
     }
 
     private void clearExternalAds() {
-        for (int i=numInitialChildren; i<saveCampaignSize; i++) {
-            tozAdCampaign.remove(numInitialChildren);
-            removeViewAt(numInitialChildren);
+        AppyAdService.getInstance().debugOut(TAG,"Removing previous campaign: "+numExternalChildren+" slots starting at index "+numInternalChildren);
+        removeViews(numInternalChildren, numExternalChildren);
+        for (int i= numInternalChildren; i< saveCampaignSize; i++) {
+            AppyAdService.getInstance().debugOut(TAG,"Removing previous ad at index "+i);
+            tozAdCampaign.remove(numInternalChildren);
         }
         initializeCounters();
         reInitializeCampaign = false;
