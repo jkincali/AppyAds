@@ -230,6 +230,7 @@ public class AppyAdManager extends ViewFlipper {
                     int atype = 0;
                     if (cv instanceof ImageView) atype = AppyAdStatic.TOZIMAGE;
                     tozAdCampaign.add(new AppyAd(atype, toAdDefaultLink, defaultTracking, defaultInAnimation, defaultOutAnimation, defaultAnimationDuration, defaultDisplayInterval));
+                    AppyAdService.getInstance().debugOut(TAG, "Added internal ad slot at index " + i);
                 }
             }
         }
@@ -330,6 +331,7 @@ public class AppyAdManager extends ViewFlipper {
                         addView(iv, getChildCount());
                         toa.mAd = null;  // No sense in wasting space.
                         //tozAdCampaign.add(toa);
+                        AppyAdService.getInstance().debugOut(TAG, "Added a view for external ad. Current view count is " + getChildCount());
                         break;
                 }
             }
