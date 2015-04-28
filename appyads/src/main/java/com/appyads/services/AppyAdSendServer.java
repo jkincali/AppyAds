@@ -14,6 +14,11 @@ import java.nio.ByteBuffer;
 
 import troyozezstr.TroyOzEZStrOut;
 
+/**
+ * AppyAdSendServer
+ *
+ * This class is used for all network communcation to/from the AppyAds server.
+ */
 public class AppyAdSendServer {
 
     private static final String TAG = "AppyAdSendServer";
@@ -25,23 +30,50 @@ public class AppyAdSendServer {
     private int specErrorNum = 0;
     public boolean mStatus = false;
 
+    /**
+     * This constructor defines the necessary parameters for a client request to the server. This
+     * particular signature is used for the retrieval of an ad campaign package from the server.
+     * @param op - An int value representing the request code.
+     * @param track - A String value representing whether or not tracking is currently on or off.
+     * @param accID - A String value representing the AppyAds account id.
+     * @param appID - A String value representing the application id.
+     * @param campID - A String value representing the AppyAds ad campaign id.
+     * @param custom - A String representing the custom setting (reserved for the application developer/ownder).
+     * @param uspec - A String representing the unique user/device id.
+     * @param screen - A String representing device's screen density.
+     */
     public AppyAdSendServer(int op, String track, String accID, String appID, String campID, String custom, String uspec, String screen) {
         mOp = op;
         mSendString = "|"+op+"|track="+track+"\\account="+accID+"\\app="+appID+"\\campaign="+campID+"\\custom="+custom+"\\user="+uspec+"\\screen="+screen+"\\";
         initVars();
     }
 
+    /**
+     * This constructor is specifically used only by the AppyAdQuickThread module for tracking
+     * click/tap-through actions.
+     * @param op - An int value representing the request code.
+     * @param sendstr - A String representing the entire request string to send to the AppyAds server.
+     */
     public AppyAdSendServer(int op, String sendstr) {
         mOp = op;
         mSendString = sendstr;
         initVars();
     }
 
+    /**
+     * This method initializes the AppyAds server IP and port.
+     */
     private void initVars() {
         mServer = AppyAdService.getHostIP();
         mPort = AppyAdService.getHostPort();
     }
 
+    /**
+     * This method sets parameters based on an error that has occurred.
+     * @param e - An int value representing the error situation.
+     * @param a - A String value representing part of the textual error message.
+     * @param b - A String value representing part of the textual error message.
+     */
     private void setSpecError(int e, String a, String b) {
         specErrorNum = e;
         specError[0] = a;
@@ -49,10 +81,18 @@ public class AppyAdSendServer {
         mStatus = false;
     }
 
+    /**
+     * This method returns the error text of the sequence of errors that have occurred.
+     * @return - An array of String values representing the textual error messages.
+     */
     public String[] getSpecError() {
         return(specError);
     }
 
+    /**
+     * This method returns a textual representation of an error that has occurred.
+     * @return - A String representing the textual value of the last error
+     */
     public String getSpecErrorStr() {
         if (specError != null) {
             if (specError.length > 1) return (specError[0]+" - "+specError[1]);
@@ -61,6 +101,12 @@ public class AppyAdSendServer {
         return(null);
     }
 
+    /**
+     * This method prepares the request string and sends it to the AppyAds server.  Note that If the request
+     * is not a tracking request, processing will be blocked by the TCP/IP socket call while
+     * waiting for a response from the server.
+     * @return - A ByteBuffer containing the response from the server.
+     */
     public ByteBuffer queryServer() {
         specErrorNum = 0;
         mStatus = false;

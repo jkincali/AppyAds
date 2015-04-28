@@ -1,5 +1,10 @@
 package com.appyads.services;
 
+/**
+ * AppyAdStatic
+ *
+ * This class defines all the static constants used in the AppyAds library
+ */
 public class AppyAdStatic {
 
     public static final int TOZIMAGE = 101;

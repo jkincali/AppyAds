@@ -11,9 +11,26 @@ import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+/**
+ * AppyAdConfig
+ *
+ * This class parses an AppyAds campaign package (xml format) and creates the individual AppyAd
+ * objects within the AppyAdManager as well as the campaign's base settings.
+ *
+ */
 public class AppyAdConfig {
 
     private static final String TAG = "AppyAdConfig";
+
+    /**
+     * This method is the main constructor and handles the parsing of the xml campaign package file
+     * and sets the properties in the AppyAd objecs within the AppyAdManager.
+     *
+     * @param toam - The AppyAdManager object which will receive the ad campaign information
+     * @param adDir - A String pointing to the directory where the ad campaign is located
+     * @param xmlfilename - A String representing the ad campaign package's xml file name
+     *
+     */
     public AppyAdConfig(AppyAdManager toam, String adDir, String xmlfilename) {
         File file = new File(adDir+xmlfilename);
         if ((file.exists()) && (toam != null)) {
@@ -110,6 +127,14 @@ public class AppyAdConfig {
         }
     }
 
+    /**
+     * This is a utility method to help the constructor parse a certain value from the xml file
+     *
+     * @param adElmnt - The Element of an xml entity
+     * @param piece - A String representing the name of an attribute of the xml entity
+     * @return - Returns a value representing the value of the named attribute
+     *
+     */
     public String getAdElementValue(Element adElmnt, String piece) {
         NodeList pLst = adElmnt.getElementsByTagName(piece);
         if (pLst != null) {
@@ -124,6 +149,16 @@ public class AppyAdConfig {
         return (null);
     }
 
+    /**
+     * This is a utility method that helps the constructor determine the values of Node attributes
+     * within the xml file.
+     *
+     * @param adNode - The Node object being parsed
+     * @param attr - A String representing the name of the attribute of the Node
+     * @param def - A String defining the default value (in case the attribute was not specified).
+     *
+     * @return
+     */
     public String getAdAttribute(Node adNode, String attr, String def) {
         NamedNodeMap nm = adNode.getAttributes();
         if (nm != null) {
