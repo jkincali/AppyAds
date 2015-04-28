@@ -424,7 +424,7 @@ public class AppyAdManager extends ViewFlipper {
         if (baseAd > lastAd) baseAd = lastAd;
         if (baseViewIndex > lastAd) baseViewIndex = lastAd;
         if (baseViewIndex < 0) baseViewIndex = 0;
-        curAd = -1;
+        curAd = 0;
     }
 
     public boolean AdsAreOn() {
