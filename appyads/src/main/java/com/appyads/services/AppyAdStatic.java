@@ -1,9 +1,7 @@
 package com.appyads.services;
 
 /**
- * AppyAdStatic
- *
- * This class defines all the static constants used in the AppyAds library
+ * This class defines all the static constants used in the AppyAds library classes
  */
 public class AppyAdStatic {
 

@@ -15,8 +15,6 @@ import java.nio.ByteBuffer;
 import troyozezstr.TroyOzEZStrOut;
 
 /**
- * AppyAdSendServer
- *
  * This class is used for all network communcation to/from the AppyAds server.
  */
 public class AppyAdSendServer {
@@ -41,15 +39,17 @@ public class AppyAdSendServer {
      * @param custom - A String representing the custom setting (reserved for the application developer/ownder).
      * @param uspec - A String representing the unique user/device id.
      * @param screen - A String representing device's screen density.
+     * @param width - An int value representing the view's width.
+     * @param height - An int value representing the view's height.
      */
-    public AppyAdSendServer(int op, String track, String accID, String appID, String campID, String custom, String uspec, String screen) {
+    public AppyAdSendServer(int op, String track, String accID, String appID, String campID, String custom, String uspec, String screen, int width, int height) {
         mOp = op;
-        mSendString = "|"+op+"|track="+track+"\\account="+accID+"\\app="+appID+"\\campaign="+campID+"\\custom="+custom+"\\user="+uspec+"\\screen="+screen+"\\";
+        mSendString = "|"+op+"|track="+track+"\\account="+accID+"\\app="+appID+"\\campaign="+campID+"\\custom="+custom+"\\user="+uspec+"\\screen="+screen+"\\width="+width+"\\height="+height+"\\";
         initVars();
     }
 
     /**
-     * This constructor is specifically used only by the AppyAdQuickThread module for tracking
+     * This constructor is specifically used only by the {@link AppyAdQuickThread} module for tracking
      * click/tap-through actions.
      * @param op - An int value representing the request code.
      * @param sendstr - A String representing the entire request string to send to the AppyAds server.
@@ -105,7 +105,7 @@ public class AppyAdSendServer {
      * This method prepares the request string and sends it to the AppyAds server.  Note that If the request
      * is not a tracking request, processing will be blocked by the TCP/IP socket call while
      * waiting for a response from the server.
-     * @return - A ByteBuffer containing the response from the server.
+     * @return - A {@link ByteBuffer} containing the response from the server.
      */
     public ByteBuffer queryServer() {
         specErrorNum = 0;

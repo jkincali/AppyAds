@@ -23,12 +23,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * AppyAdService
- *
  * This class represents the control center of the AppyAds system.
- * "There can be only one" instance of this class.  It is a Singleton class and all external references to the AppyAdService object are via the getInstance() method.
- * This module handles communication between the retriever thread and the view class by the use of
- * a static Handler object, which processes messages from the non-UI thread, which cannot directly
+ * "There can be only one" instance of this class.  It is a Singleton class and all external references to the AppyAdService object are via the {@link #getInstance() getInstance()} method.
+ * This module handles communication between the {@link AppyAdRetriever} thread and the {@link AppyAdManager} object by the use of
+ * a static {@link Handler} object, which processes messages from the non-UI thread, which cannot directly
  * manipulate views.
  *
  */
@@ -37,7 +35,9 @@ public class AppyAdService {
     private static final String TAG = "AppyAdService";
     public static final int MAX_ERROR_ALLOWANCE = 10;
 	public static final int ERROR_DELAY_LIMIT = 30;
-	public static final int NORMAL_SLEEP_DURATION = 5000;
+    public static final int NORMAL_SLEEP_DURATION = 5000;
+    public static final int MINIMUM_REFRESH_TIME = 30000;  // 30 seconds
+    public static final int MAXIMUM_REFRESH_TIME = 86400000;  // 24 hours
     public static final String TROYOZ_NAME_SPACE = "http://schemas.appyads.com/attributes";
 	private static final String AD_SERVER_HOST = "data.troyoz.info";
 	private static final int AD_SERVER_PORT = 30000;
@@ -57,9 +57,9 @@ public class AppyAdService {
 
     /**
      * This constructor is private, ensuring it will not be instanciated by any external object.
-     * The Handler object is defined within the constructor, which is the object that receives
+     * The {@link Handler} object is defined within the constructor, which is the object that receives
      * messages from the non-UI thread and processes them, either with an error to the log or with
-     * an update request to the AppyAdManager view to which the message referred.
+     * an update request to the {@link AppyAdManager} view object to which the message referred.
      */
     private AppyAdService() {
         // Hidden... only one instance guaranteed.
@@ -90,9 +90,9 @@ public class AppyAdService {
     }
 
     /**
-     * A static reference to the Handler object.
+     * A static reference to the {@link Handler} object.
      *
-     * @return handler - a reference to the Handler object.
+     * @return handler - a reference to the {@link Handler} object.
      */
     public static Handler getHandler() {
         return handler;
@@ -102,7 +102,7 @@ public class AppyAdService {
      * This method checks to see if the non-UI thread is running and, if it is not running, submits
      * the thread and defines the application's file directory (to which new ad campaigns are saved).
      *
-     * @param context - The context (Activity) which govern's the AppyAdManager view.
+     * @param context - The context (Activity) which govern's the {@link AppyAdManager} view object.
      */
     private void initializeAdService(Context context) {
 		if (!adThreadRunning) {
@@ -124,7 +124,7 @@ public class AppyAdService {
 	}
 
     /**
-     * This method get's the currently visible AppyAdManager view and calls its method to update its
+     * This method get's the currently visible {@link AppyAdManager} view object and calls its method to update its
      * ad views.
      */
 	private void updateAdViews() {
@@ -136,12 +136,12 @@ public class AppyAdService {
 	}
 
     /**
-     * This method is called from a newly instantiated AppyAdManager view, which is requesting to
+     * This method is called from a newly instantiated {@link AppyAdManager} view object, which is requesting to
      * be recognized by the AppyAds service.
      *
      * @param uspec - A String representing a unique identifier for the device
      * @param appid - A String representing a unique identifier for the application
-     * @param toam - A reference to the AppyAdManager object making the registration request
+     * @param toam - A reference to the {@link AppyAdManager} object making the registration request
      */
     public void registerManager(String uspec, String appid, AppyAdManager toam) {
         if (toam != null) {
@@ -153,13 +153,13 @@ public class AppyAdService {
     }
 
     /**
-     * This method is called to take the currently visible AppyAdManager view off the stack.  It is
-     * called when the AppyAdManaager View is being destroyed.  However, it is possible that the
+     * This method is called to take the currently visible {@link AppyAdManager} view object off the stack.  It is
+     * called when the {@link AppyAdManager} object is being destroyed.  However, it is possible that the
      * user is simply changing orientation, in which case the non-UI thread should not be stopped, because
      * it will just need to be started again.  Hence the need for the parameter, which indicates whether
      * or not to stop the non-UI thread.
      *
-     * @param stopIt - A boolean value indicating whether or not to stop the non-UI AppyAdRetriever thread.
+     * @param stopIt - A boolean value indicating whether or not to stop the non-UI {@link AppyAdRetriever} thread.
      */
     public void unRegisterManager(boolean stopIt) {
         if (!mgrStack.empty()) {
@@ -263,8 +263,8 @@ public class AppyAdService {
      * ad view.  Note that tracking must be enabled for the ad view.  If tracking is not enabled for
      * the ad view, this method will not be called.
      *
-     * @param toam - the AppyAdManager object in play
-     * @param toa - the AppyAd object representing the ad view which was tapped/clicked
+     * @param toam - The {@link AppyAdManager} object in play
+     * @param toa - The {@link AppyAd} object representing the ad view which was tapped/clicked
      */
     public void trackAdCampaign(AppyAdManager toam, AppyAd toa) {
         if (toam != null) {
@@ -275,6 +275,8 @@ public class AppyAdService {
                     toam.getCustomSpec(),
                     getUUID(),
                     toam.getScreenDensity(),
+                    toam.getAdViewWidth(),
+                    toam.getAdViewHeight(),
                     toa.mAdID,
                     toa.mLink
             );
@@ -305,9 +307,9 @@ public class AppyAdService {
 
     /**
      * This method is called by the non-UI thread when a new ad campaign package has be received.
-     * The new ad campaign is loaded into the currently visible AppyAdManager view.
+     * The new ad campaign is loaded into the currently visible {@link AppyAdManager} view object.
      *
-     * @param bb - A ByteBuffer object containing the new ad campaign package.
+     * @param bb - A {@link ByteBuffer} object containing the new ad campaign package.
      */
     public void setAdData(ByteBuffer bb) {
         debugOut(TAG,"Received campaign data set with length "+bb.position());
@@ -344,7 +346,7 @@ public class AppyAdService {
      * directory.
      *
      * @param adDir - A String representing the directory to which the ad campaign files will be saved
-     * @param zippedBuffer - A ByteArrayInputStream containing the ad campaign (in zipped format)
+     * @param zippedBuffer - A {@link ByteArrayInputStream} containing the ad campaign (in zipped format)
      * @return - A boolean value indicating whether or not the ad campaign was successfully unpacked to the specified directory.
      */
     private boolean unpackAds(String adDir, ByteArrayInputStream zippedBuffer) {
@@ -411,7 +413,7 @@ public class AppyAdService {
     /**
      * This method recursively removes files from a directory.
      *
-     * @param dir - A File object representing the directory to be removed, along with all its contents.
+     * @param dir - A {@link File} object representing the directory to be removed, along with all its contents.
      */
     private void recurseDeleteFiles(File dir) {
         if (dir.isDirectory()) {
@@ -427,10 +429,10 @@ public class AppyAdService {
     // ********************* Original Service stuff *******************
 
     /**
-     * This method checks to see if the currently visible AppyAdManager view has a valid set of
-     * AppyAd ads.
+     * This method checks to see if the currently visible {@link AppyAdManager} view object has a valid set of
+     * {@link AppyAd} ad objects.
      *
-     * @return - A boolean value indicating whether or not the AppyAdManager view has a valid set of ads.
+     * @return - A boolean value indicating whether or not the {@link AppyAdManager} view object has a valid set of ads.
      */
     public boolean hasValidAdCampaign() {
         if (!mgrStack.empty()) {
@@ -440,17 +442,8 @@ public class AppyAdService {
         else return (false);
     }
 
-    /*public Integer getInterval() {
-        if (!mgrStack.empty()) {
-            AppyAdManager toam = mgrStack.peek();
-            if (toam != null) return (toam.getRefreshInterval());
-            else return (0);
-        }
-        else return (0);
-    }*/
-
     /**
-     * This method returns the current account ID being used for the currently visible AppyAdManager view.
+     * This method returns the current account ID being used for the currently visible {@link AppyAdManager} view object.
      * @return - A String representing the account ID.
      */
     public String getAccountID() {
@@ -463,7 +456,7 @@ public class AppyAdService {
     }
 
     /**
-     * This method returns the current campaign ID being used by the currently visible AppyAdManager view.
+     * This method returns the current campaign ID being used by the currently visible {@link AppyAdManager} view object.
      * @return - A String representing the campaign ID.
      */
     public String getCampaignID() {
@@ -487,29 +480,41 @@ public class AppyAdService {
         }
         else return (null);
     }
-	
-	/*public void turnAdsOn() {
+
+    /**
+     * This method returns the current width of the {@link AppyAdManager} view port.
+     * @return - An int value representing the width of the view
+     */
+    public int getAdViewWidth() {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.setAdProcessing(true);
+            if (toam != null) return (toam.getAdViewWidth());
+            else return (0);
         }
-	}
-	
-	public void turnAdsOff() {
+        else return (0);
+    }
+
+    /**
+     * This method returns the current height of the {@link AppyAdManager} view port.
+     * @return - An int value representing the height of the view
+     */
+    public int getAdViewHeight() {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.setAdProcessing(false);
+            if (toam != null) return (toam.getAdViewHeight());
+            else return (0);
         }
-	}*/
+        else return (0);
+    }
 
     /**
      * This method is called to check whether ad processing is on or off.
      * @return - A boolean value indicating whether or not ad processing is on.
      */
-	public boolean AdsAreOn() {
+	public boolean adsAreOn() {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
-            return ((toam != null) && (toam.AdsAreOn()));
+            return ((toam != null) && (toam.adsAreOn()));
         }
         else return (false);
 	}
@@ -524,6 +529,18 @@ public class AppyAdService {
             return ((toam != null) && (toam.timeToRefresh()));
         }
         else return (false);
+    }
+
+    /**
+     * This method retrieves the default link set by the {@link AppyAdManager} view object, for taps/clicks on ads which do not set their own link values.
+     * @return - A String value representing the default link to use when clicks/taps on ads without link settings occur.
+     */
+    public String getDefaultLink() {
+        if (!mgrStack.empty()) {
+            AppyAdManager toam = mgrStack.peek();
+            if (toam != null) return (toam.getDefaultLink());
+        }
+        return (null);
     }
 
     /**
@@ -632,7 +649,7 @@ public class AppyAdService {
     }
 
     /**
-     * This method calls the currently active AppyAdManager view in order to allow it to prepare its
+     * This method calls the currently active {@link AppyAdManager} view object in order to allow it to prepare its
      * next ad.
      * @return - A boolean value indicating whether or not an ad is ready to be displayed.
      */
@@ -644,38 +661,16 @@ public class AppyAdService {
         else return (false);
     }
 
-
-    /*public void incrementErrorCounter(int increment) {
-        if (!mgrStack.empty()) {
-            AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.incrementErrorCounter(increment);
-        }
-    }
-
-    public void resetCounters() {
-        if (!mgrStack.empty()) {
-            AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.resetCounters();
-        }
-    }
-
-    public void initializeCounters() {
-        if (!mgrStack.empty()) {
-            AppyAdManager toam = mgrStack.peek();
-            if (toam != null) toam.initializeCounters();
-        }
-    }*/
-
     /**
      * This method provides a common increment signature for updating the error counter of the
-     * currently active AppyAdManager view.
+     * currently active {@link AppyAdManager} view object.
      */
     public void checkMaxErrors() {
         checkMaxErrors(1);
     }
 
     /**
-     * This method calls the currently active AppyAdManager view and increments its error counter.
+     * This method calls the currently active {@link AppyAdManager} view object and increments its error counter.
      *
      * @param increment - An int value representing the amount by which to increase the error counter.
      */
@@ -705,8 +700,8 @@ public class AppyAdService {
     }
 
     /**
-     * This method returns the current error count for the active AppyAdManager view.
-     * @return - An Integer value representing the number of errors that have occurred for the active AppyAdManager view.
+     * This method returns the current error count for the active {@link AppyAdManager} view object.
+     * @return - An Integer value representing the number of errors that have occurred for the active {@link AppyAdManager} view object.
      */
     public Integer getErrorCount() {
         if (!mgrStack.empty()) {
@@ -718,8 +713,8 @@ public class AppyAdService {
     }
 
     /**
-     * This method returns the current delay count for the active AppyAdManager view.
-     * @return - An Integer value representing the delay counter for the active AppyAdManager view.
+     * This method returns the current delay count for the active {@link AppyAdManager} view object.
+     * @return - An Integer value representing the delay counter for the active {@link AppyAdManager} view object.
      */
     public Integer getDelayCount() {
         if (!mgrStack.empty()) {
@@ -779,13 +774,9 @@ public class AppyAdService {
      * This method reveals whether the non-UI thread is processing normally or has been temporarily paused.
      * @return - A boolean value indicating whether or not the ad processing is on.
      */
-	public boolean AdServiceIsOn() {
+	public boolean adServiceIsOn() {
 		return (adThreadLooper);
 	}
-
-	/*public int setCurErrorCount() {
-		return (MAX_ERROR_ALLOWANCE);
-	}*/
 
     /**
      * This method is used to turn debugging on or off.
@@ -822,8 +813,8 @@ public class AppyAdService {
     /**
      * This method translates a String representation of an animation into an Animation object.
      * @param dir - A String indicating whether the animation is an "in" or "out" animation
-     * @param toa - An AppyAd object containing the specifics of the ad, which includes the animation (in String form)
-     * @return - An Animation object
+     * @param toa - An {@link AppyAd} object containing the specifics of the ad, which includes the animation properties
+     * @return - An {@link Animation} object
      */
     public Animation setAnimation(String dir, AppyAd toa) {
         Animation a;

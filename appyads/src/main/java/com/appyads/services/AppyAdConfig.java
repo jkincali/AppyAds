@@ -12,10 +12,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * AppyAdConfig
- *
- * This class parses an AppyAds campaign package (xml format) and creates the individual AppyAd
- * objects within the AppyAdManager as well as the campaign's base settings.
+ * This class parses an AppyAds campaign package (xml format) and creates the individual {@link AppyAd}
+ * objects within the {@link AppyAdManager} as well as the campaign's base settings.
  *
  */
 public class AppyAdConfig {
@@ -24,9 +22,9 @@ public class AppyAdConfig {
 
     /**
      * This method is the main constructor and handles the parsing of the xml campaign package file
-     * and sets the properties in the AppyAd objecs within the AppyAdManager.
+     * and sets the properties in the {@link AppyAd} objecs within the {@link AppyAdManager}.
      *
-     * @param toam - The AppyAdManager object which will receive the ad campaign information
+     * @param toam - The {@link AppyAdManager} object which will receive the ad campaign information
      * @param adDir - A String pointing to the directory where the ad campaign is located
      * @param xmlfilename - A String representing the ad campaign package's xml file name
      *
@@ -40,6 +38,7 @@ public class AppyAdConfig {
                 String defaultOutAnimation = AppyAdService.getInstance().getDefaultOutAnimation();
                 String defaultAnimationDuration = String.valueOf(AppyAdService.getInstance().getDefaultAnimationDuration());
                 String defaultAdDuration = String.valueOf(AppyAdService.getInstance().getDefaultDisplayInterval());
+                String defaultLink = AppyAdService.getInstance().getDefaultLink();
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 Document doc = db.parse(file);
@@ -67,6 +66,7 @@ public class AppyAdConfig {
                         AppyAdService.getInstance().debugOut(TAG,"Descr : "+descr);
 
                         String link = getAdElementValue(adElmnt,"link");
+                        if (link == null) link = defaultLink;
                         AppyAdService.getInstance().debugOut(TAG,"Link : "+link);
 
                         String id = getAdAttribute(adNode, "id", null);
@@ -108,6 +108,10 @@ public class AppyAdConfig {
                 NodeList campLst = doc.getElementsByTagName("AppyAdCampaign");
                 Node cNode = campLst.item(0);
                 if (cNode.getNodeType() == Node.ELEMENT_NODE) {
+                    String campId = getAdAttribute(cNode, "id", null);
+                    AppyAdService.getInstance().debugOut(TAG,"campaignID="+campId);
+                    toam.setCampaignId(campId);
+
                     String baseIdx = getAdAttribute(cNode, "baseViewIndex", null);
                     AppyAdService.getInstance().debugOut(TAG,"baseViewIndex="+baseIdx);
                     if (baseIdx != null) toam.setBaseViewIndex(baseIdx);
@@ -119,6 +123,10 @@ public class AppyAdConfig {
                     String repCy = getAdAttribute(cNode, "repeatCycle", null);
                     AppyAdService.getInstance().debugOut(TAG,"repeatCycle="+repCy);
                     if (repCy != null) toam.setRepeatCycle(repCy);
+
+                    String refInt = getAdAttribute(cNode, "refreshInterval", null);
+                    AppyAdService.getInstance().debugOut(TAG,"refreshInterval="+refInt);
+                    if (refInt != null) toam.setRefreshInterval(refInt);
                 }
 
             } catch (Exception e) {
@@ -130,7 +138,7 @@ public class AppyAdConfig {
     /**
      * This is a utility method to help the constructor parse a certain value from the xml file
      *
-     * @param adElmnt - The Element of an xml entity
+     * @param adElmnt - The {@link Element} of an xml entity
      * @param piece - A String representing the name of an attribute of the xml entity
      * @return - Returns a value representing the value of the named attribute
      *
@@ -150,14 +158,14 @@ public class AppyAdConfig {
     }
 
     /**
-     * This is a utility method that helps the constructor determine the values of Node attributes
+     * This is a utility method that helps the constructor determine the values of {@link Node} attributes
      * within the xml file.
      *
-     * @param adNode - The Node object being parsed
+     * @param adNode - The {@link Node} object being parsed
      * @param attr - A String representing the name of the attribute of the Node
      * @param def - A String defining the default value (in case the attribute was not specified).
      *
-     * @return
+     * @return - A String representing the value of the attribute (or the default value supplied by def if the attribute was not specified in the xml)
      */
     public String getAdAttribute(Node adNode, String attr, String def) {
         NamedNodeMap nm = adNode.getAttributes();

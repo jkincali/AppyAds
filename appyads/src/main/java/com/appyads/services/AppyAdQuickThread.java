@@ -1,13 +1,10 @@
 package com.appyads.services;
 
 /**
- * AppyAdQuickThread - lightweight server communication for sending tracking logs
- *
  * This class supplies the AppyAds system with a lightweight communication module, which is used
  * to quickly send a small informational packed to be sent to the AppyAds server.  This thread
  * is only used when tracking has been enabled for a particular ad view.
- * Note that there is no status sent back to the UI thread, so it is possible that click-throughs
- * do not get logged successfully due to, for example network outages.
+ * Note that there is no status sent back to the UI thread.
  */
 public class AppyAdQuickThread implements Runnable {
 
@@ -25,17 +22,18 @@ public class AppyAdQuickThread implements Runnable {
      * @param custom - A String value reserved for the application developer/owner.
      * @param uid - A String representing a unique user/device identifier.
      * @param screen - A String representing the device's screen density.
+     * @param width - An int value representing the view's width.
+     * @param height - An int value representing the view's height.
      * @param adid - A String representing the ad's id.
      * @param adlink - A String representing the link that the user was sent to after tapping/clicking on the ad.
      */
-    public AppyAdQuickThread(int op, String account, String app, String campaign, String custom, String uid, String screen, String adid, String adlink) {
-        mSendString = "|"+op+"|account="+account+"\\app="+app+"\\campaign="+campaign+"\\custom="+custom+"\\user="+uid+"\\screen="+screen+"\\adid="+adid+"\\adlink="+adlink+"\\";
+    public AppyAdQuickThread(int op, String account, String app, String campaign, String custom, String uid, String screen, int width, int height, String adid, String adlink) {
+        mSendString = "|"+op+"|account="+account+"\\app="+app+"\\campaign="+campaign+"\\custom="+custom+"\\user="+uid+"\\screen="+screen+"\\width="+width+"\\height="+height+"\\adid="+adid+"\\adlink="+adlink+"\\";
         mOp = op;
     }
 
     /**
-     * The main run method of the thread is used to process in the background (non-UI).
-     * Basically sends a tracking request to the AppyAds server and then exits.
+     * This method runs in the background (non-UI) and sends a tracking request to the AppyAds server and then exits.
      */
     @Override
     public void run() {
