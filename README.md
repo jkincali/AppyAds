@@ -10,12 +10,7 @@ The application's manifest should allow the following permissions:
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 ```
-#Dependencies
-The external java library, TroyOzEZStrOut.jar needs to be included in the application.  All requests for advertisement campaigns from the Android device to the AppyAds server must be in a certain format, and this library ensures that format is consistent.
-TroyOzEZStrOut.jar can be obtained <a href="http://troyozis.com/downloads/libraries/TroyOzEZStrOut.jar">here</a>.  Once obtained, place this .jar library in the libs directory of the application and include the following line into the build.gradle file:
-```ruby
-  compile files('libs/TroyOzEZStrOut.jar')
-```
+
 #Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
@@ -26,8 +21,7 @@ So the final edit of the application's dependencies section of the build.gradle 
   dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile files('libs/TroyOzEZStrOut.jar')
-    compile 'com.appyads.services:appyads:1.0'
+    compile 'com.appyads.services:appyads:1.0.0'
 }
 ```
 #Implement AppyAds service functionality
