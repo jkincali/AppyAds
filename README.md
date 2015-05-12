@@ -40,7 +40,7 @@ Please note that the AppyAdManager view has custom attributes.  Because of this,
 ```ruby
   xmlns:appyadmgr="http://schemas.appyads.com/attributes"
 ```
-Of course, there are further options available, and intial views can even be embedded within the AppyAdManager view.  Please see the appyads.com developer pages for more information.
+Of course, there are further options available, and intial views can even be embedded within the AppyAdManager view.  Please see the <a href="http://appyads.com/support/docs/android/">appyads.com developer pages</a> (especially the AppyAdManager section) for more information.
 #Setting up Account IDs and Campaign IDs
 All advertising campaigns are initiated through an account at <a href="appyads.com">AppyAds.com</a>.  From there, you can sign up for an account and begin to create your own ads, or sign up for ads to be delivered to your app.
 
