@@ -470,7 +470,7 @@ public class AppyAdService {
 
     /**
      * This method returns the screen density setting.
-     * @return - A String representing the screen density for the device. (ldpi,mdpi,hdpi,xdpi,xxdpi or xxxdpi)
+     * @return - A String representing the screen density for the device. (ldpi,mdpi,hdpi,xhdpi,xxhdpi or xxxhdpi)
      */
     public String getScreenDensity() {
         if (!mgrStack.empty()) {

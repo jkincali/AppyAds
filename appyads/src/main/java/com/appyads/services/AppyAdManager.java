@@ -136,7 +136,7 @@ import java.util.ArrayList;
  *  However, note that an ad campaign package retrieved from the server may also override the <strong>baseViewIndex</strong>, which may cause the embedded objects to be bypassed in subsequent ad cycles.</p>
  *
  * @author Jon DeWeese
- * @version 1.0
+ * @version 1.0.20
  * @since 1.0
  */
 public class AppyAdManager extends ViewFlipper {
@@ -847,7 +847,7 @@ public class AppyAdManager extends ViewFlipper {
 
     /**
      * This method returns the screen density of the current device.
-     * @return screenDensity - A String value representing the screen density. (ldpi,mdpi,hdpi,xdpi,xxdpi or xxxdpi)
+     * @return screenDensity - A String value representing the screen density. (ldpi,mdpi,hdpi,xhdpi,xxhdpi or xxxhdpi)
      */
     public String getScreenDensity() {
         return (mScreenDensity);
