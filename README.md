@@ -10,24 +10,18 @@ The application's manifest should allow the following permissions:
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 ```
-#Dependencies
-The external java library, TroyOzEZStrOut.jar needs to be included in the application.  All requests for advertisement campaigns from the Android device to the AppyAds server must be in a certain format, and this library ensures that format is consistent.
-TroyOzEZStrOut.jar can be obtained <a href="http://troyozis.com/downloads/libraries/TroyOzEZStrOut.jar">here</a>.  Once obtained, place this .jar library in the libs directory of the application and include the following line into the build.gradle file:
-```ruby
-  compile files('libs/TroyOzEZStrOut.jar')
-```
+
 #Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
-  compile 'com.appyads.services:appyads:1.0'
+  compile 'com.appyads.services:appyads:1.0.20'
 ```
 So the final edit of the application's dependencies section of the build.gradle file might look something like:
 ```ruby
   dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.0.0'
-    compile files('libs/TroyOzEZStrOut.jar')
-    compile 'com.appyads.services:appyads:1.0'
+    compile 'com.android.support:appcompat-v7:20.0.0'
+    compile 'com.appyads.services:appyads:1.0.20'
 }
 ```
 #Implement AppyAds service functionality
@@ -46,7 +40,7 @@ Please note that the AppyAdManager view has custom attributes.  Because of this,
 ```ruby
   xmlns:appyadmgr="http://schemas.appyads.com/attributes"
 ```
-Of course, there are further options available, and intial views can even be embedded within the AppyAdManager view.  Please see the appyads.com developer pages for more information.
+Of course, there are further options available, and intial views can even be embedded within the AppyAdManager view.  Please see the <a href="http://appyads.com/support/docs/android/">appyads.com developer pages</a> (especially the AppyAdManager section) for more information.
 #Setting up Account IDs and Campaign IDs
 All advertising campaigns are initiated through an account at <a href="appyads.com">AppyAds.com</a>.  From there, you can sign up for an account and begin to create your own ads, or sign up for ads to be delivered to your app.
 
