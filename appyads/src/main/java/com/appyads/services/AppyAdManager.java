@@ -894,7 +894,7 @@ public class AppyAdManager extends ViewFlipper {
         }
         AppyAdService.getInstance().debugOut(TAG,"Current ad campaign has external ad duration of "+externalCampaignDuration+". Total total campaign duration is "+totalCampaignDuration);
 
-        if (tozAdCampaignRetrievalInterval != null) {
+        if ((tozAdCampaignRetrievalInterval != null) && (tozAdCampaignRetrievalInterval > 0)) {
             int minRefresh = Math.max(totalCampaignDuration,AppyAdService.getInstance().MINIMUM_REFRESH_TIME);
             if (tozAdCampaignRetrievalInterval < minRefresh) {
                 AppyAdService.getInstance().debugOut(TAG,"Adjusting refresh interval upward to "+minRefresh);
