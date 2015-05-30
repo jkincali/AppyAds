@@ -926,7 +926,7 @@ public class AppyAdManager extends ViewFlipper {
     public boolean prepareNextAd() {
         boolean retVal = false;
 
-        if ((tozAdCampaign.size() - numInternalChildren) <= 0) return (retVal);
+        if (tozAdCampaign.size() <= 1) return (retVal);
 
         AppyAdService.getInstance().debugOut(TAG,"Preparing next Ad... indexes: next="+nextAd+", current="+curAd+", base="+baseAd+", last="+lastAd+", repeatCycle="+repeatCycle);
 
