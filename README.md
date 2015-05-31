@@ -1,8 +1,11 @@
 # AppyAds
 AppyAds is an Android library easily included into any Android application.  Once included, the application author/owner is able to control advertising within their app.  Advertisements can be dynamically changed at any time, introducing new advertising campaigns when desired, without any code changes.  Several options allow the application author/owner to release in-home developed advertisements, or subscribe to external sources.  Options are dynamically controlled through the AppyAds.com website after an account has been set up for the application.
 
-#Requirements
-Target build for the Android application should be API 11 or higher.
+#Library Build Notes
+```ruby
+compileSdkVersion 20
+targetSdkVersion 11
+```
 
 #Permissions
 The application's manifest should allow the following permissions:
@@ -14,14 +17,14 @@ The application's manifest should allow the following permissions:
 #Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
-  compile 'com.appyads.services:appyads:1.1.0'
+  compile 'com.appyads.services:appyads:1.1.1'
 ```
 So the final edit of the application's dependencies section of the build.gradle file might look something like:
 ```ruby
   dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:20.0.0'
-    compile 'com.appyads.services:appyads:1.1.0'
+    compile 'com.appyads.services:appyads:1.1.1'
 }
 ```
 #Implement AppyAds service functionality
