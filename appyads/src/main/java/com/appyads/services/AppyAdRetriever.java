@@ -3,8 +3,6 @@ package com.appyads.services;
 import android.os.Handler;
 import android.os.Message;
 
-import java.nio.ByteBuffer;
-
 /**
  * This module runs as a background thread and provides the AppyAds system with the following
  * functionality:
@@ -57,7 +55,7 @@ public class AppyAdRetriever implements Runnable {
      *   <ul><li>Initiates requests to the AppyAds server to retrieve ad campaign packages.</li></ul>
      *   <ul><li>Notifies the {@link AppyAdService} object (and hence the current {@link AppyAdManager} object) when
      *     new ad campaigns have been retrieved.</li></ul>
-     *   <ul><li>Notifies the {@link AppyAdService} & {@link AppyAdManager} objects when the next ad should be displayed.</li></ul>
+     *   <ul><li>Notifies the {@link AppyAdService} &amp; {@link AppyAdManager} objects when the next ad should be displayed.</li></ul>
      *   <ul><li>Sleeps in between all the above activities.</li></ul>
      */
 	@Override
@@ -75,17 +73,11 @@ public class AppyAdRetriever implements Runnable {
                     AppyAdService.getInstance().debugOut(TAG,"Ads are ON. Error count is "+ AppyAdService.getInstance().getErrorCount());
                     if (AppyAdService.getInstance().adsNeedRefreshing()) {
                         if (AppyAdService.getInstance().isNetworkAvailable()) {
-                            ByteBuffer retBuf;
-                            AppyAdSendServer tgsd = new AppyAdSendServer(AppyAdStatic.GETADSET,
-                                    AppyAdService.getInstance().getDefaultTracking() ? "true" : "false",
+                            String retBuf;
+                            AppyAdSendServer tgsd = new AppyAdSendServer(new AppyAdRequest(AppyAdStatic.GETADSET,
                                     AppyAdService.getInstance().getAccountID(),
-                                    AppyAdService.getInstance().getApplicationID(),
-                                    AppyAdService.getInstance().getCampaignID(),
-                                    AppyAdService.getInstance().getCustomSpec(),
-                                    AppyAdService.getInstance().getUUID(),
-                                    AppyAdService.getInstance().getScreenDensity(),
-                                    AppyAdService.getInstance().getAdViewWidth(),
-                                    AppyAdService.getInstance().getAdViewHeight());
+                                    AppyAdService.getInstance().getCampaignSize(),
+                                    AppyAdService.getInstance().getDefaultTracking() ? "true" : "false"));
                             retBuf = tgsd.queryServer();
                             if (tgsd.mStatus) {
                                 AppyAdService.getInstance().setAdData(retBuf);

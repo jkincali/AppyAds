@@ -5,8 +5,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import java.io.File;
+import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,49 +26,53 @@ public class AppyAdConfig {
      * and sets the properties in the {@link AppyAd} objecs within the {@link AppyAdManager}.
      *
      * @param toam - The {@link AppyAdManager} object which will receive the ad campaign information
-     * @param adDir - A String pointing to the directory where the ad campaign is located
-     * @param xmlfilename - A String representing the ad campaign package's xml file name
+     * @param adXmlDriver - A String containing an AppyAds ad campaign details in XML format
      *
      */
-    public AppyAdConfig(AppyAdManager toam, String adDir, String xmlfilename) {
-        File file = new File(adDir+xmlfilename);
-        if ((file.exists()) && (toam != null)) {
+    public AppyAdConfig(AppyAdManager toam, String adXmlDriver) {
+        String campAcct = null;
+        if ((adXmlDriver.length() > 50) && (toam != null)) {
             try {
                 String defaultTrack = AppyAdService.getInstance().getDefaultTracking() ? "true" : "false";
                 String defaultInAnimation = AppyAdService.getInstance().getDefaultInAnimation();
                 String defaultOutAnimation = AppyAdService.getInstance().getDefaultOutAnimation();
                 String defaultAnimationDuration = String.valueOf(AppyAdService.getInstance().getDefaultAnimationDuration());
                 String defaultAdDuration = String.valueOf(AppyAdService.getInstance().getDefaultDisplayInterval());
-                String defaultLink = AppyAdService.getInstance().getDefaultLink();
+                //String defaultLink = AppyAdService.getInstance().getDefaultLink();
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
-                Document doc = db.parse(file);
+                InputSource is = new InputSource();
+                is.setCharacterStream(new StringReader(adXmlDriver));
+                Document doc = db.parse(is);
                 doc.getDocumentElement().normalize();
                 AppyAdService.getInstance().debugOut(TAG,"Root element " + doc.getDocumentElement().getNodeName());
 
-                NodeList nodeLst = doc.getElementsByTagName("AppyAd");
-                AppyAdService.getInstance().debugOut(TAG,"Information of all ads.....");
+                NodeList nodeLst = doc.getElementsByTagName("AppyAdsElement");
+                AppyAdService.getInstance().debugOut(TAG,"Information for all ads.....");
 
-                for (int s = 0; s < nodeLst.getLength(); s++) {
+                int nodeLength = nodeLst.getLength();
+                if (nodeLength > 0) toam.initCampaignData();
+
+                for (int s = 0; s < nodeLength; s++) {
 
                     Node adNode = nodeLst.item(s);
 
                     if (adNode.getNodeType() == Node.ELEMENT_NODE) {
 
-                        Element adElmnt = (Element) adNode;
+                        String imgSrc = getAdAttribute(adNode, "src", null);
+                        AppyAdService.getInstance().debugOut(TAG,"src="+imgSrc);
 
-                        String imgFileName = getAdElementValue(adElmnt,"image");
-                        AppyAdService.getInstance().debugOut(TAG,"Image : "+imgFileName);
+                        if (campAcct == null && imgSrc != null && imgSrc.contains("/resources/?rc=")) {
+                            campAcct = imgSrc.substring(imgSrc.indexOf("/resources/?rc=")+15);
+                            if (campAcct.indexOf('/') > 0) campAcct = campAcct.substring(0,campAcct.indexOf('/'));
+                            else campAcct = null;
+                        }
 
-                        String title = getAdElementValue(adElmnt,"title");
-                        AppyAdService.getInstance().debugOut(TAG,"Title : "+title);
+                        String title = getAdAttribute(adNode, "title", null);
+                        AppyAdService.getInstance().debugOut(TAG,"title="+title);
 
-                        String descr = getAdElementValue(adElmnt,"description");
-                        AppyAdService.getInstance().debugOut(TAG,"Descr : "+descr);
-
-                        String link = getAdElementValue(adElmnt,"link");
-                        if (link == null) link = defaultLink;
-                        AppyAdService.getInstance().debugOut(TAG,"Link : "+link);
+                        String link = getAdAttribute(adNode, "link", null);
+                        AppyAdService.getInstance().debugOut(TAG,"link="+link);
 
                         String id = getAdAttribute(adNode, "id", null);
                         AppyAdService.getInstance().debugOut(TAG,"id="+id);
@@ -92,12 +97,7 @@ public class AppyAdConfig {
 
                         if (adType != null) {
                             if (adType.toLowerCase().equals("image")) {
-                                AppyAdService.getInstance().debugOut(TAG,"Ad type is image...file name is "+imgFileName);
-                                File imgFile = new File(adDir+"/"+imgFileName);
-                                if (imgFile.exists()) {
-                                    AppyAdService.getInstance().debugOut(TAG,"Found Ad file "+imgFileName);
-                                    toam.addAd(new AppyAd(AppyAdStatic.TOZIMAGE,imgFile,id,title,descr,link,tracking,inA,outA,ad,dd));
-                                }
+                                toam.addAd(new AppyAd(AppyAdStatic.TOZIMAGE,imgSrc,id,title,link,tracking,inA,outA,ad,dd));
                             }
                         }
 
@@ -105,9 +105,11 @@ public class AppyAdConfig {
 
                 }
 
-                NodeList campLst = doc.getElementsByTagName("AppyAdCampaign");
+                NodeList campLst = doc.getElementsByTagName("AppyAdsCampaign");
                 Node cNode = campLst.item(0);
                 if (cNode.getNodeType() == Node.ELEMENT_NODE) {
+                    toam.setCampaignAccount(campAcct);
+
                     String campId = getAdAttribute(cNode, "id", null);
                     AppyAdService.getInstance().debugOut(TAG,"campaignID="+campId);
                     toam.setCampaignId(campId);

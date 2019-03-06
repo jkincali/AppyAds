@@ -3,7 +3,8 @@ package com.appyads.services;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * This class is used to represent all the different properties of an ad.
@@ -11,9 +12,10 @@ import java.io.File;
  */
 public class AppyAd {
 
+    private static final String TAG = "AppyAd";
+
     public String mAdID;
 	public String mTitle;
-	public String mDescription;
 	public String mLink;
     public boolean mTracking;
 	public Bitmap mAd;
@@ -35,17 +37,16 @@ public class AppyAd {
      * @param addur - An Integer value representing the number of milliseconds the ad view will be displayed.
      */
     public AppyAd (int atype, String link, boolean track, String animin, String animout, Integer animdur, Integer addur) {
-        this(atype,null,"base-layout",null,null,link,track?"true":"false",animin,animout,animdur.toString(),addur.toString());
+        this(atype,null,"base-layout",null,link,track?"true":"false",animin,animout,animdur.toString(),addur.toString());
     }
 
     /**
      * This constructor sets the main values for all the properties of this object.
      *
      * @param atype - An int value representing the type of ad. See the {@link AppyAdStatic} class for more information.
-     * @param adfile - A {@link File} object used to store the media resource file (bitmap for image)
+     * @param adSrc - A String value containing a URL to the ad element
      * @param id - A String value representing the id of this ad view.
      * @param title - A String value representing the title of this ad view.
-     * @param description - A String value representing the description of this ad view.
      * @param link - A String value representing the link the user will be taken to when clicked/tapped.
      * @param track - A String value representing "true" or "false" for tracking to be on or off for this ad view.
      * @param animin - A String value representing the animation to use for introducing this ad view.
@@ -53,7 +54,7 @@ public class AppyAd {
      * @param animdur - A String representation of the number of milliseconds the animations will take to process.
      * @param addur - A String representation of the number of milliseconds the ad view will be displayed.
      */
-    public AppyAd (int atype, File adfile, String id, String title, String description, String link, String track, String animin, String animout, String animdur, String addur) {
+    public AppyAd (int atype, String adSrc, String id, String title, String link, String track, String animin, String animout, String animdur, String addur) {
 
         int animIn = AppyAdStatic.FADE_IN;
         int animOut = AppyAdStatic.FADE_OUT;
@@ -103,10 +104,19 @@ public class AppyAd {
         }
 
         mType = atype;
- 		if (adfile != null) mAd = BitmapFactory.decodeFile(adfile.getAbsolutePath(),new BitmapFactory.Options());
+ 		if (adSrc != null) {
+ 		    //mAd = BitmapFactory.decodeFile(adSrc.getAbsolutePath(),new BitmapFactory.Options());
+            try {
+                URL url = new URL(adSrc);
+                mAd = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch(IOException e) {
+                System.out.println(e);
+                AppyAdService.getInstance().errorOut(TAG,"Unable to load image at "+adSrc);
+                mAd = null;
+            }
+        }
         mAdID = id;
 		mTitle = title;
-		mDescription = description;
 		mLink = link;
         mTracking = ((track != null) && (track.toLowerCase().equals("true")));
         mAnimationIn = animIn;

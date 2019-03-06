@@ -26,8 +26,11 @@ import java.util.ArrayList;
  *  <ul><li>appyadmgr:accountID="myaccount"
  *      <ul><li>Mandatory. Specifies the AppyAds account id.</li></ul></li></ul>
  *
- *  <ul><li>appyadmgr:campaignID="mycampaign"
- *      <ul><li>Mandatory. Specifies the AppyAds ad campaign id.</li></ul></li></ul>
+ *  <ul><li>appyadmgr:campaignSize="300X250"
+ *      <ul><li>Optional. Specifies the AppyAds ad campaign sizing. If not specified, the system will try to match AppyAds campaigns that best fit within the {@link AppyAdManager} layout element.</li></ul></li></ul>
+ *
+ * <ul><li>appyadmgr:campaignID="mycampaign"
+ *      <ul><li>Optional. Specifies an AppyAds ad campaign id. If you only want to host your own campaign ad and know the AppyAds campaign id, specify it here.</li></ul></li></ul>
  *
  *  <ul><li>appyadmgr:adProcessing="true"
  *      <ul><li>Optional. Specifies whether or not ads should be processed.  Default is true.  Setting adProcessing to "false" will turn off ad processing. To start ad processing the application will need to programmatically call the method {@link #setAdProcessing(boolean) setAdProcessing(true)}</li></ul></li></ul>
@@ -63,9 +66,6 @@ import java.util.ArrayList;
  *      </li></ul>
  *  </li></ul>
  *
- *  <ul><li>appyadmgr:defaultLink="http://www.appyads.com"
- *      <ul><li>Optional. Specifies the default link to use for directing the user to when they tap/click on the ad.  Note that this value will most likely be overridden by ad campaigns retrieved from the server.</li></ul></li></ul>
- *
  *  <ul><li>appyadmgr:defaultOutAnimation="zoom_out_to_right"
  *      <ul><li>Optional. Specifies the default animation to be used for ad views that are becoming invisible.  Default is "fade_out".  Note that this value will most likely be overridden by ad campaigns retrieved from the server.
  *          <ul><li><strong>Out animation values:</strong>
@@ -94,11 +94,11 @@ import java.util.ArrayList;
  *  <ul><li>appyadmgr:repeatCycle="3"
  *      <ul><li>Optional. Specifies the number of cycles the ad campaign should be repeated after the initial round. Default value is to continuously cycle.  A value of "0" will force the cycle to stop after the first round.  Note that this value will most likely be overridden by ad campaigns retrieved from the server.</li></ul></li></ul>
  *
- *  <br /><br />
- *  At the top of the layout xml file, be sure and include a definition for the appyads schema name space:<br />
- *  <strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xmlns:appyadmgr="http://schemas.appyads.com/attributes"</strong><br /><br />
+ *  <br><br>
+ *  At the top of the layout xml file, be sure and include a definition for the appyads schema name space:<br>
+ *  <strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xmlns:appyadmgr="http://schemas.appyads.com/attributes"</strong><br><br>
  *
- *  An example inclusion of the AppyAdManager view object in the xml layout:<br /><br />
+ *  An example inclusion of the AppyAdManager view object in the xml layout:<br><br>
  *  <pre>
  *      {@code
  *      ...
@@ -110,6 +110,7 @@ import java.util.ArrayList;
  *              android:orientation="horizontal"
  *              appyadmgr:refreshInterval="600000"
  *              appyadmgr:accountID="myaccount"
+ *              appyadmgr:campaignSize="180X180"
  *              appyadmgr:campaignID="mycampaign"
  *              appyadmgr:defaultTracking="true"
  *              appyadmgr:defaultInAnimation="zoom_in_from_center"
@@ -144,6 +145,8 @@ public class AppyAdManager extends ViewFlipper {
     private static final String TAG = "AppyAdManager";
     private ArrayList<AppyAd> tozAdCampaign = new ArrayList<AppyAd>();
     private String tozAdAccountID;
+    private String tozCampaignSize;
+    private String tozAdCampaignAccount;
     private String tozAdCampaignID;
     private Integer tozAdCampaignRetrievalInterval;
     private Integer tozAdCampaignRetrievalCounter;
@@ -305,48 +308,51 @@ public class AppyAdManager extends ViewFlipper {
         delayCounter = 0;
 
         if (attrs != null) {
-            tozAdAccountID = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "accountID");
+            tozAdAccountID = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "accountID");
             if (tozAdAccountID == null) tozAdAccountID = "undefined";
 
-            String temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "campaignID");
+            tozCampaignSize = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "campaignSize");
+            if (tozCampaignSize == null) tozCampaignSize = "undefined";
+
+            String temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "campaignID");
             setCampaignId(temp);
 
-            tozCustomSpec = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "customSpec");
+            tozCustomSpec = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "customSpec");
 
-            toAdDefaultLink = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultLink");
+            toAdDefaultLink = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultLink");
 
-            defaultInAnimation = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultInAnimation");
+            defaultInAnimation = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultInAnimation");
             if (defaultInAnimation == null) defaultInAnimation = AppyAdStatic.NORMAL_IN_ANIMATION;
-            defaultOutAnimation = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultOutAnimation");
+            defaultOutAnimation = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultOutAnimation");
             if (defaultOutAnimation == null) defaultOutAnimation = AppyAdStatic.NORMAL_OUT_ANIMATION;
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "refreshInterval");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "refreshInterval");
             setRefreshInterval(temp);
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultDisplayInterval");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultDisplayInterval");
             defaultDisplayInterval = parseIntegerValue(temp,AppyAdService.getInstance().getDefaultSleepInterval());
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultAnimationDuration");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultAnimationDuration");
             defaultAnimationDuration = parseIntegerValue(temp,AppyAdStatic.NORMAL_ANIMATION_DURATION);
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "baseViewIndex");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "baseViewIndex");
             setBaseViewIndex(temp);
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "finalViewIndex");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "finalViewIndex");
             setFinalViewIndex(temp);
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "repeatCycle");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "repeatCycle");
             setRepeatCycle(temp);
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "defaultTracking");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "defaultTracking");
             defaultTracking = false;
             if (temp != null) if (temp.toLowerCase().equals("true")) defaultTracking = true;
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "adProcessing");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "adProcessing");
             mAdsOn = true;
             if (temp != null) if (temp.toLowerCase().equals("false")) mAdsOn = false;
 
-            temp = attrs.getAttributeValue(AppyAdService.getInstance().TROYOZ_NAME_SPACE, "debug");
+            temp = attrs.getAttributeValue(AppyAdService.getInstance().APPYADS_NAME_SPACE, "debug");
             if (temp != null) if (temp.toLowerCase().equals("true")) AppyAdService.getInstance().setDebug(true);
 
         }
@@ -382,6 +388,7 @@ public class AppyAdManager extends ViewFlipper {
         AppyAdService.getInstance().debugOut(TAG, "Initialized state ....." +
                 "\n - Account: " + tozAdAccountID +
                 "\n - Ad Campaign: " + tozAdCampaignID +
+                "\n - Campaign size designator: " + tozCampaignSize +
                 "\n - Custom Parameter: " + tozCustomSpec +
                 "\n - Campaign retrieval interval is " + tozAdCampaignRetrievalInterval +
                 "\n - Default link " + toAdDefaultLink +
@@ -476,10 +483,27 @@ public class AppyAdManager extends ViewFlipper {
             tozAdViewHeight = h;
             tozAdViewWidth = w;
 
+            if (tozCampaignSize == null || tozCampaignSize.equals("undefined")) {
+                tozCampaignSize = String.valueOf(tozAdViewWidth)+"X"+String.valueOf(tozAdViewHeight);
+                AppyAdService.getInstance().debugOut(TAG, "Set campaign area size to "+tozCampaignSize);
+            }
+
             AppyAdService.getInstance().debugOut(TAG, "Ad view port width is "+tozAdViewWidth+" and height is "+ tozAdViewHeight);
             AppyAdService.getInstance().debugOut(TAG, "Registering this manager view...");
             AppyAdService.getInstance().registerManager(tozAndroidId, tozApplicationName, this);
         }
+    }
+
+    /**
+     * This method is called when a new ad campaign package has been retrieved by the server. The main campaign fields are
+     * cleared so that any new data will not conflict with the previous ad campaign.
+     */
+    public void initCampaignData() {
+        tozAdCampaignAccount = "init";
+        tozAdCampaignID = "init";
+        baseViewIndex = 0;
+        finalViewIndex = 0;
+        repeatCycle = 0;
     }
 
     /**
@@ -532,8 +556,13 @@ public class AppyAdManager extends ViewFlipper {
                         }
                     }
                     else if (!link.toLowerCase().equals("none")) {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
-                        getContext().startActivity(browserIntent);
+                        try {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+                            getContext().startActivity(browserIntent);
+                        }
+                        catch (Exception e) {
+                            AppyAdService.getInstance().errorOut(TAG, "Unable to navigate to specified link - "+link);
+                        }
                     }
                 }
             }
@@ -596,6 +625,17 @@ public class AppyAdManager extends ViewFlipper {
     public void addAd(AppyAd toa) {
         if (toa != null) tozAdCampaign.add(toa);
         AppyAdService.getInstance().debugOut(TAG,"Current number of ads in campaign is "+tozAdCampaign.size());
+    }
+
+    /**
+     * This method sets the campaigAccount string.
+     * @param campaignAccount - A String value representing a unique identifier for the creator of the ad campaign.
+     */
+    public void setCampaignAccount(String campaignAccount) {
+        if ((campaignAccount != null) && !campaignAccount.isEmpty()) {
+            tozAdCampaignAccount = campaignAccount;
+        }
+        else tozAdCampaignAccount = "default";
     }
 
     /**
@@ -730,6 +770,22 @@ public class AppyAdManager extends ViewFlipper {
     }
 
     /**
+     * This method returns the current AppyAds campaign size, which was originally set in the layout xml file.
+     * @return value - A String representing the AppyAds campaign size designation.
+     */
+    public String getCampaignSize() {
+        return (tozCampaignSize);
+    }
+
+    /**
+     * This method returns the current campaign's creator id, which was set in the layout xml file retrieved from the server.
+     * @return value - A String representing the campaign account.
+     */
+    public String getCampaignAccount() {
+        return (tozAdCampaignAccount);
+    }
+
+    /**
      * This method returns the current campaign id, which was originally set in the layout xml file.
      * @return value - A String representing the campaign id.
      */
@@ -758,14 +814,19 @@ public class AppyAdManager extends ViewFlipper {
      * @param s - A String representing the custom specification to set for tracking/recording click-throughs. (Returns null if not set.)
      */
     public void setCustomSpec(String s) {
-        tozCustomSpec = s;
-        AppyAdService.getInstance().debugOut(TAG,"Set custom parameter to "+tozCustomSpec);
+        if (s.length() <= 128) {
+            tozCustomSpec = s;
+            AppyAdService.getInstance().debugOut(TAG, "Set custom parameter to " + tozCustomSpec);
+        }
+        else {
+            AppyAdService.getInstance().errorOut(TAG, "Custom parameter is too long! Not set.");
+        }
     }
 
     /**
      * This method allows the parent application to define a {@link Handler} that will get notified when
      * custom links are used for the click/tap-throughs on ads.  Custom links start with a "app/"
-     * followed by any pattern of a String value.  When these links are clicked/tapped by a user
+     * followed by any String value pattern.  When these links are clicked/tapped by a user
      * the handler will be sent the String pattern in a message sent to the handler.  The 'what'
      * field will be marked with the controlValue, which will enable better processing by the parent
      * {@link Handler} object.

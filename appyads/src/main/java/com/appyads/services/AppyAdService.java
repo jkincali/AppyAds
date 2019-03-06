@@ -12,15 +12,9 @@ import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.Stack;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * This class represents the control center of the AppyAds system.
@@ -33,16 +27,15 @@ import java.util.zip.ZipInputStream;
 public class AppyAdService {
 
     private static final String TAG = "AppyAdService";
-    public static final int MAX_ERROR_ALLOWANCE = 10;
-	public static final int ERROR_DELAY_LIMIT = 30;
-    public static final int NORMAL_SLEEP_DURATION = 5000;
+    private static final int MAX_ERROR_ALLOWANCE = 10;
+    private static final int ERROR_DELAY_LIMIT = 30;
+    private static final int NORMAL_SLEEP_DURATION = 5000;
     public static final int MINIMUM_REFRESH_TIME = 30000;  // 30 seconds
     public static final int MAXIMUM_REFRESH_TIME = 86400000;  // 24 hours
-    public static final String TROYOZ_NAME_SPACE = "http://schemas.appyads.com/attributes";
-	private static final String AD_SERVER_HOST = "data.troyoz.info";
-	private static final int AD_SERVER_PORT = 30000;
-	private static String tozAdServerIP;
-	
+    public static final String APPYADS_NAME_SPACE = "http://schemas.appyads.com/attributes";
+    private static final String APPYADS_SERVER_HOST_URL = "https://appyads.com/campaign-resources/";
+    private static final String APPYADS_SERVER_TRACKER_URL = "https://ads.appyads.com/";
+
 	public static Handler handler;
 	private static boolean adThreadLooper = false;
 	private static boolean adThreadRunning = false;
@@ -67,14 +60,19 @@ public class AppyAdService {
             @Override
             public void handleMessage(Message msg) {
                 debugOut(TAG,"Handler method received message from Retriever thread.");
-                switch (msg.what) {
-                    case 1:
-                        errorOut(TAG,"Error from AdRetriever thread.");
-                        showAlert((String[]) msg.obj);
-                        break;
-                    case 7:
-                        updateAdViews();
-                        break;
+                try {
+                    switch (msg.what) {
+                        case 1:
+                            errorOut(TAG, "Error from AdRetriever thread.");
+                            showAlert((String[]) msg.obj);
+                            break;
+                        case 7:
+                            updateAdViews();
+                            break;
+                    }
+                }
+                catch (Exception e) {
+                    errorOut(TAG,e.getMessage());
                 }
             }
         };
@@ -209,52 +207,18 @@ public class AppyAdService {
     }
 
     /**
-     * Normally, in order to enhance network response time, DNS is used only used for the first connection
-     * to the server.  After that, only the IP address is needed.  But occasionally, the IP needs to be
-     * refreshed.  This method is called to refresh the IP address.
+     * This method returns the parameters used in the URL GET call to the AppyAds server.
+     * @param urlSpec - An integer representing the URL type, depending on the type of server call.
+     * @return resourceString - A String value representing the URL parameters.
      */
-    public static void reSetHostIP() {
-		try {
-			tozAdServerIP = InetAddress.getByName(AD_SERVER_HOST).getHostAddress(); 
-		}
-		catch (UnknownHostException uhe) {
-			tozAdServerIP = "0.0.0.0";
-		}
-	}
-
-    /**
-     * This method is used to set the IP address of the AppyAds service.
-     */
-	public static void setHostIP() {
-		if (tozAdServerIP == null) reSetHostIP();
-		else if (tozAdServerIP.equals("0.0.0.0")) reSetHostIP();
-	}
-
-    /**
-     * This method is used to force the IP address to be refreshed the next time the server is needed.
-     */
-	public static void requestRefreshHostIP() {
-		tozAdServerIP = null;
-	}
-
-    /**
-     * This method returns the current server's host IP address.
-     *
-     * @return ipAddress - A String value representing the IP address of the server.
-     */
-	public static String getHostIP() {
-		setHostIP();
-		return (tozAdServerIP);
-	}
-
-    /**
-     * This method returns the TCP/IP port that is used by the AppyAds server.
-     *
-     * @return port - An int value representing the TCP/IP port used by the AppyAds server.
-     */
-	public static int getHostPort() {
-		return (AD_SERVER_PORT);
-	}
+    public static String getAppyAdsServerUrl(int urlSpec) {
+        switch (urlSpec) {
+            case AppyAdStatic.TRACKAD:
+                return (APPYADS_SERVER_TRACKER_URL);
+            default:
+                return (APPYADS_SERVER_HOST_URL);
+        }
+    }
 
     // *********************** Ad Tracking ***************************
 
@@ -268,10 +232,12 @@ public class AppyAdService {
      */
     public void trackAdCampaign(AppyAdManager toam, AppyAd toa) {
         if (toam != null) {
-            AppyAdQuickThread tozqt = new AppyAdQuickThread(AppyAdStatic.TRACKAD,
+            AppyAdQuickThread tozqt = new AppyAdQuickThread(new AppyAdRequest(AppyAdStatic.TRACKAD,
                     getAccountID(),
                     getApplicationID(),
+                    toam.getCampaignAccount(),
                     toam.getCampaignID(),
+                    toam.getCampaignSize(),
                     toam.getCustomSpec(),
                     getUUID(),
                     toam.getScreenDensity(),
@@ -279,7 +245,7 @@ public class AppyAdService {
                     toam.getAdViewHeight(),
                     toa.mAdID,
                     toa.mLink
-            );
+            ));
             new Thread(tozqt).start();
         }
     }
@@ -309,121 +275,41 @@ public class AppyAdService {
      * This method is called by the non-UI thread when a new ad campaign package has be received.
      * The new ad campaign is loaded into the currently visible {@link AppyAdManager} view object.
      *
-     * @param bb - A {@link ByteBuffer} object containing the new ad campaign package.
+     * @param xmlDriver - A String containing the new ad campaign package.
      */
-    public void setAdData(ByteBuffer bb) {
-        debugOut(TAG,"Received campaign data set with length "+bb.position());
-        if (bb.position() > 100) {
+    public void setAdData(String xmlDriver) {
+        debugOut(TAG,"Received campaign data set with length "+xmlDriver.length());
+        if (xmlDriver.length() > 100) {
             if (!mgrStack.empty()) {
                 AppyAdManager toam = mgrStack.peek();
                 if (toam != null) {
-                    ByteArrayInputStream zippedBuffer = new ByteArrayInputStream(bb.array());
-                    String adDir = adRootDir + "/" + toam.getCampaignID();
-                    if (unpackAds(adDir, zippedBuffer)) {
-                        toam.readyNewCampaign();
-                        new AppyAdConfig(toam, adDir, "/AP.xml");
-                        toam.markRefreshed();
-                        debugOut(TAG,"Set Ad campaign successfully.");
+                    toam.readyNewCampaign();
+                    new AppyAdConfig(toam, xmlDriver);
+                    toam.markRefreshed();
+                    debugOut(TAG,"Set Ad campaign successfully.");
+                }
+            }
+        }
+        else if (xmlDriver.length() > 0) {
+            if (!mgrStack.empty()) {
+                AppyAdManager toam = mgrStack.peek();
+                if (toam != null) {
+                    //toam.declareNoExternalAdSet();
+                    if (xmlDriver.equals("No account information found.")) {
+                        debugOut(TAG, "Account ID seemes to be invalid for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
+                    }
+                    else if (xmlDriver.equals("No published campaigns found.")) {
+                        debugOut(TAG, "Unable to retrieve any ad campaigns for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
+                    }
+                    else if (xmlDriver.equals("Invalid campaign specifiction.")) {
+                        debugOut(TAG, "Invalid campaign size specified for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
+                    }
+                    else {
+                        debugOut(TAG, "Received invalid response packet from server for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
                     }
                 }
             }
         }
-        else if (bb.position() == 1) {
-            if (bb.array()[0] == 77) {
-                if (!mgrStack.empty()) {
-                    AppyAdManager toam = mgrStack.peek();
-                    if (toam != null) {
-                        //toam.declareNoExternalAdSet();
-                        debugOut(TAG,"Unable to retrieve any ad campaigns for account "+toam.getAccountID()+", campaign "+toam.getCampaignID()+".");
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * This method unpacks a new ad campaign package (zip file) to the application's private file
-     * directory.
-     *
-     * @param adDir - A String representing the directory to which the ad campaign files will be saved
-     * @param zippedBuffer - A {@link ByteArrayInputStream} containing the ad campaign (in zipped format)
-     * @return - A boolean value indicating whether or not the ad campaign was successfully unpacked to the specified directory.
-     */
-    private boolean unpackAds(String adDir, ByteArrayInputStream zippedBuffer) {
-        boolean zipStat = false;
-        try {
-            ZipInputStream zin = new ZipInputStream(zippedBuffer);
-            initAdsDirectory(adDir);
-
-            ZipEntry ze = null;
-            while ((ze = zin.getNextEntry()) != null) {
-                debugOut(TAG,"Unzipping campaign package " + ze.getName());
-
-                if(ze.isDirectory()) {
-                    checkMakeDirectory(adDir + "/" + ze.getName());
-                }
-                else {
-                    FileOutputStream fout = new FileOutputStream(new File(adDir + "/" + ze.getName()));
-                    for (int c = zin.read(); c != -1; c = zin.read()) {
-                        fout.write(c);
-                    }
-
-                    zin.closeEntry();
-                    fout.close();
-                }
-            }
-            zin.close();
-            zipStat = true;
-        }
-        catch (Exception e) {
-            errorOut(TAG,"Unable to unpack campaign package.\n - "+e.getMessage());
-        }
-        return (zipStat);
-    }
-
-    /**
-     * This utilitiy method checks to see if the necessary directory already exists and creates it
-     * if it doesn't exist.
-     * @param dir - A String representing the full file path to the directory.
-     */
-    private void checkMakeDirectory(String dir) {
-        File f = new File(dir);
-
-        if (!f.isDirectory()) {
-            if (!f.mkdirs()) errorOut(TAG,"Unable to create directory for Ad campaign.");
-        }
-    }
-
-    /**
-     * This method ensures a completely fresh directory is created for a new ad campaign by removing
-     * a campaign if one already exists prior to creating a new one.
-     * @param adDir - A String representing the full directory path to the ad directory
-     */
-    private void initAdsDirectory(String adDir) {
-        File f = new File (adDir);
-        if (!f.isDirectory()) {
-            if (!f.mkdirs()) errorOut(TAG,"Unable to create directory for Ad campaign (init A).");
-        }
-        else {
-            recurseDeleteFiles(f);
-            if (!f.mkdirs()) errorOut(TAG,"Unable to create directory for Ad campaign (init B).");
-        }
-    }
-
-    /**
-     * This method recursively removes files from a directory.
-     *
-     * @param dir - A {@link File} object representing the directory to be removed, along with all its contents.
-     */
-    private void recurseDeleteFiles(File dir) {
-        if (dir.isDirectory()) {
-            String[] children = dir.list();
-            for (int i=0; i<children.length; i++) {
-                recurseDeleteFiles(new File(dir,children[i]));
-            }
-        }
-        if (dir.delete()) debugOut(TAG,"Deleted file " + dir.getAbsolutePath());
-        else errorOut(TAG,"Unable to delete file "+dir.getAbsolutePath());
     }
 
     // ********************* Original Service stuff *******************
@@ -450,6 +336,19 @@ public class AppyAdService {
         if (!mgrStack.empty()) {
             AppyAdManager toam = mgrStack.peek();
             if (toam != null) return (toam.getAccountID());
+            else return (null);
+        }
+        else return (null);
+    }
+
+    /**
+     * This method returns the current AppyAds campaign size for the currently running {@link AppyAdManager} campaign.
+     * @return - A String representing the AppyAds campaign size designation.
+     */
+    public String getCampaignSize() {
+        if (!mgrStack.empty()) {
+            AppyAdManager toam = mgrStack.peek();
+            if (toam != null) return (toam.getCampaignSize());
             else return (null);
         }
         else return (null);
@@ -767,7 +666,6 @@ public class AppyAdService {
      */
 	public void stopService() {
 		adThreadLooper = false;
-        if (adRootDir != null) recurseDeleteFiles(new File(adRootDir));
 	}
 
     /**

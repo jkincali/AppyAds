@@ -1,18 +1,14 @@
 package com.appyads.services;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-
-import troyozezstr.TroyOzEZStrOut;
 
 /**
  * This class is used for all network communcation to/from the AppyAds server.
@@ -20,52 +16,17 @@ import troyozezstr.TroyOzEZStrOut;
 public class AppyAdSendServer {
 
     private static final String TAG = "AppyAdSendServer";
-    private String mServer;
-    private int mPort;
-    private String mSendString;
-    private int mOp = 0;
+    private AppyAdRequest mAppyAdRequest;
     private String[] specError = new String[] {"",""};
     private int specErrorNum = 0;
     public boolean mStatus = false;
 
     /**
-     * This constructor defines the necessary parameters for a client request to the server. This
-     * particular signature is used for the retrieval of an ad campaign package from the server.
-     * @param op - An int value representing the request code.
-     * @param track - A String value representing whether or not tracking is currently on or off.
-     * @param accID - A String value representing the AppyAds account id.
-     * @param appID - A String value representing the application id.
-     * @param campID - A String value representing the AppyAds ad campaign id.
-     * @param custom - A String representing the custom setting (reserved for the application developer/ownder).
-     * @param uspec - A String representing the unique user/device id.
-     * @param screen - A String representing device's screen density.
-     * @param width - An int value representing the view's width.
-     * @param height - An int value representing the view's height.
+     * This constructor is for initializing the parameters needed to send a query to the AppyAds server.
+     * @param aaRequest - An AppyAdRequest object representing the entire request string to send to the AppyAds server.
      */
-    public AppyAdSendServer(int op, String track, String accID, String appID, String campID, String custom, String uspec, String screen, int width, int height) {
-        mOp = op;
-        mSendString = "|"+op+"|track="+track+"\\account="+accID+"\\app="+appID+"\\campaign="+campID+"\\custom="+custom+"\\user="+uspec+"\\screen="+screen+"\\width="+width+"\\height="+height+"\\";
-        initVars();
-    }
-
-    /**
-     * This constructor is specifically used only by the {@link AppyAdQuickThread} module for tracking
-     * click/tap-through actions.
-     * @param op - An int value representing the request code.
-     * @param sendstr - A String representing the entire request string to send to the AppyAds server.
-     */
-    public AppyAdSendServer(int op, String sendstr) {
-        mOp = op;
-        mSendString = sendstr;
-        initVars();
-    }
-
-    /**
-     * This method initializes the AppyAds server IP and port.
-     */
-    private void initVars() {
-        mServer = AppyAdService.getHostIP();
-        mPort = AppyAdService.getHostPort();
+    public AppyAdSendServer(AppyAdRequest aaRequest) {
+        mAppyAdRequest = aaRequest;
     }
 
     /**
@@ -102,55 +63,77 @@ public class AppyAdSendServer {
     }
 
     /**
+     * This method prepares query parameters to send to the AppyAds server
+     * @return - A ByteBuffer object which is created with a call to the queryServer() method.
+     */
+    private String prepExQuery() {
+        StringBuilder pars = new StringBuilder("");
+        try {
+            if (mAppyAdRequest.track != null) pars.append("&tracking=").append(URLEncoder.encode(mAppyAdRequest.track, "UTF-8"));
+            if (mAppyAdRequest.accId != null) pars.append("&account_id=").append(URLEncoder.encode(mAppyAdRequest.accId, "UTF-8"));
+            if (mAppyAdRequest.appId != null) pars.append("&app_id=").append(URLEncoder.encode(mAppyAdRequest.appId, "UTF-8"));
+            if (mAppyAdRequest.campAcct != null) pars.append("&cacct=").append(URLEncoder.encode(mAppyAdRequest.campAcct, "UTF-8"));
+            if (mAppyAdRequest.campId != null) pars.append("&campaign_id=").append(URLEncoder.encode(mAppyAdRequest.campId, "UTF-8"));
+            if (mAppyAdRequest.campSize != null) pars.append("&campaign_size=").append(URLEncoder.encode(mAppyAdRequest.campSize, "UTF-8"));
+            if (mAppyAdRequest.adId != null) pars.append("&ad_id=").append(URLEncoder.encode(mAppyAdRequest.adId, "UTF-8"));
+            if (mAppyAdRequest.adLink != null) pars.append("&ad_link=").append(URLEncoder.encode(mAppyAdRequest.adLink, "UTF-8"));
+            if (mAppyAdRequest.custom != null) pars.append("&custom=").append(URLEncoder.encode(mAppyAdRequest.custom, "UTF-8"));
+            if (mAppyAdRequest.uSpec != null) pars.append("&user_id=").append(URLEncoder.encode(mAppyAdRequest.uSpec, "UTF-8"));
+            if (mAppyAdRequest.screen != null) pars.append("&screen=").append(URLEncoder.encode(mAppyAdRequest.screen, "UTF-8"));
+            if (mAppyAdRequest.width > 0) pars.append("&width=").append(String.valueOf(mAppyAdRequest.width));
+            if (mAppyAdRequest.height > 0) pars.append("&height=").append(String.valueOf(mAppyAdRequest.height));
+            if (pars.length() > 1) pars = pars.deleteCharAt(0);
+        }
+        catch (Exception e) {
+            AppyAdService.getInstance().errorOut(TAG,"Exception while building query parameters. \n - "+e.getMessage());
+        }
+        return(pars.toString());
+    }
+
+    /**
      * This method prepares the request string and sends it to the AppyAds server.  Note that If the request
      * is not a tracking request, processing will be blocked by the TCP/IP socket call while
      * waiting for a response from the server.
-     * @return - A {@link ByteBuffer} containing the response from the server.
+     * @return - A String value containing the response from the server.
      */
-    public ByteBuffer queryServer() {
+    public String queryServer() {
         specErrorNum = 0;
         mStatus = false;
-        ByteBuffer retBuf = null;
-        TroyOzEZStrOut ts = new TroyOzEZStrOut();
-        String str = ts.tozPrepStr(mSendString);
-        Socket socket = null;
+        StringBuilder svrResp = new StringBuilder();
+        BufferedReader input = null;
+        OutputStreamWriter output = null;
+        HttpURLConnection client = null;
         try {
-            // Create socket
-            InetAddress serverAddr = InetAddress.getByName(mServer);
+            String sPars = prepExQuery();
 
-            socket = new Socket(serverAddr, mPort);
+            // Define http connection
+            URL url = new URL(AppyAdService.getAppyAdsServerUrl(mAppyAdRequest.operation));
+            client = (HttpURLConnection) url.openConnection();
 
-            // Set up input and output buffers
-            PrintWriter output = new PrintWriter(new BufferedWriter(
-                    new OutputStreamWriter(socket.getOutputStream(),"UTF8")),
-                    true);
+            // Setup for writing/reading
+            client.setDoOutput(true);
+            client.setFixedLengthStreamingMode(sPars.length());
+            output = new OutputStreamWriter(client.getOutputStream());
+            output.write(sPars);
+            output.flush();
 
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Send query to server
-            output.println(str);
-
-            if (mOp == AppyAdStatic.GETADSET) {
+            if (mAppyAdRequest.operation == AppyAdStatic.GETADSET) {
+                input = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 // Now wait for response
-                byte[] b = new byte[2048];
-                retBuf = ByteBuffer.allocate(150000);
-                int length;
-                while ((length = socket.getInputStream().read(b)) != -1) {
-                    retBuf.put(b, 0, length);
+
+                String line = null;
+                while ((line = input.readLine()) != null) {
+                    svrResp.append(line).append("\n");
                 }
-                AppyAdService.getInstance().debugOut(TAG, "Got in ad package with length " + retBuf.position());
+                AppyAdService.getInstance().debugOut(TAG, "Got in ad package with length " + svrResp.length());
             }
             else {
-                retBuf = ByteBuffer.allocate(2);
-                retBuf.put(new byte[]{'o','k'});
+                svrResp.append("ok");
             }
             // Set status to ok
             mStatus = true;
+            AppyAdService.getInstance().debugOut(TAG,"Network server connection operation successful.");
 
-            input.close();
-            output.close();
-            // Close the socket connection
-            AppyAdService.getInstance().debugOut(TAG,"Network socket read successfully. Closed channels.");
         }
         catch (UnknownHostException e1) {
             setSpecError(1,"Unable to connect to server.","Possible network DNS system error.");
@@ -165,25 +148,19 @@ public class AppyAdSendServer {
             setSpecError(1,"Unable to connect to server.","Error during network connection.");
         }
         finally {
-            try {
-                AppyAdService.getInstance().debugOut(TAG,"Closing network socket.");
-                if (socket != null) socket.close();
-            }
-            catch (IOException el) {
-                // ignore, we're done anyway.
-            }
+            AppyAdService.getInstance().debugOut(TAG,"Closing network connections.");
+            // Close the http connection
+            try { if (input != null) input.close(); } catch (Exception el) { }
+            try { if (output != null) output.close(); } catch (Exception el) { }
+            try { if (client != null) client.disconnect(); } catch (Exception el) { }
         }
 
-        if (retBuf == null) {
+        if (svrResp.length() == 0) {
+            svrResp.append(' '); // Failure
             if (specErrorNum == 0) setSpecError(1,"No response from network server.","Please try again later.");
         }
-        else if (retBuf.position() == 0) {
-            if (specErrorNum == 0) setSpecError(1,"Unable to reach network server.","Please try again later.");
-        }
-        else {
-            return (retBuf);
-        }
-        return (ByteBuffer.allocate(1));//("Fail"));
+
+        return (svrResp.toString());
     }
 
 }
