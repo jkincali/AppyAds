@@ -4,7 +4,7 @@ AppyAds is an Android library easily included into any Android application.  Onc
 #Library Build Notes
 ```ruby
 compileSdkVersion 20
-targetSdkVersion 11
+targetSdkVersion 16 // Should be 16 or higher.
 ```
 
 #Permissions
@@ -17,14 +17,14 @@ The application's manifest should allow the following permissions:
 #Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
-  compile 'com.appyads.services:appyads:1.1.1'
+  implementation 'com.appyads.services:appyads:1.1.3'
 ```
 So the final edit of the application's dependencies section of the build.gradle file might look something like:
 ```ruby
   dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:20.0.0'
-    compile 'com.appyads.services:appyads:1.1.1'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:20.0.0'
+    implementation 'com.appyads.services:appyads:1.1.3'
 }
 ```
 #Implement AppyAds service functionality
@@ -34,8 +34,7 @@ The AppyAds library consists of a sub MVC framework, which controls the advertis
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        appyadmgr:accountID="myaccount"
-        appyadmgr:campaignID="mycampaign" >
+        appyadmgr:accountID="myaccount" >
 
   </com.appyads.services.AppyAdManager>
 ```
