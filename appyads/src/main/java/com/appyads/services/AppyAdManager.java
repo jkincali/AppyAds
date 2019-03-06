@@ -20,7 +20,9 @@ import java.util.ArrayList;
 /**
  * This class is used to display advertising campaign components. Note that although this class
  * has public methods available, most interactions should be accomplished using the xml layout
- * file, where values are passed to this class's object via attributes.
+ * file, where values are passed to this class's object via attributes. Also note that even though
+ * public methods may alter properties, it is likely that they will be over-ridden when a new
+ * campaign package is retrieved from the server.
  *
  * <p><strong>Attributes</strong> (for use in layout xml file):</p>
  *  <ul><li>appyadmgr:accountID="myaccount"
