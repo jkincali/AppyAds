@@ -3,8 +3,8 @@ AppyAds is an Android library easily included into any Android application.  Onc
 
 #Library Build Notes
 ```ruby
+minSdkVersion 16 // Should be 16 or higher.
 targetSdkVersion 28
-targetSdkVersion 16 // Should be 16 or higher.
 ```
 
 #Permissions
