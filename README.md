@@ -3,7 +3,7 @@ AppyAds is an Android library easily included into any Android application.  Onc
 
 #Library Build Notes
 ```ruby
-compileSdkVersion 20
+targetSdkVersion 28
 targetSdkVersion 16 // Should be 16 or higher.
 ```
 
@@ -23,7 +23,7 @@ So the final edit of the application's dependencies section of the build.gradle 
 ```ruby
   dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:20.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.appyads.services:appyads:1.1.3'
 }
 ```
