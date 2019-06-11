@@ -17,14 +17,14 @@ The application's manifest should allow the following permissions:
 #Include/Compile the AppyAds library
 The easiest way to include the AppyAds library into a project is to include the following in the dependencies section of the build.gradle file:
 ```ruby
-  implementation 'com.appyads.services:appyads:1.1.3'
+  implementation 'com.appyads.services:appyads:1.1.4'
 ```
 So the final edit of the application's dependencies section of the build.gradle file might look something like:
 ```ruby
   dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.appyads.services:appyads:1.1.3'
+    implementation 'com.appyads.services:appyads:1.1.4'
 }
 ```
 #Implement AppyAds service functionality
