@@ -384,10 +384,11 @@ public class AppyAdManager extends ViewFlipper {
         } catch (PackageManager.NameNotFoundException e) {
             ai = null;
         }
-        tozApplicationName = (String) (ai != null ? pm.getApplicationLabel(ai) : "(unknown)");
+        tozApplicationName = (String) (ai != null ? pm.getApplicationLabel(ai) : "unknown");
         tozAndroidId = Settings.Secure.getString(getContext().getContentResolver(),Settings.Secure.ANDROID_ID);
 
         AppyAdService.getInstance().debugOut(TAG, "Initialized state ....." +
+                "\n - App: " + tozApplicationName +
                 "\n - Account: " + tozAdAccountID +
                 "\n - Ad Campaign: " + tozAdCampaignID +
                 "\n - Campaign size designator: " + tozCampaignSize +
@@ -761,6 +762,14 @@ public class AppyAdManager extends ViewFlipper {
      */
     public void setAdProcessing(boolean sw) {
         mAdsOn = sw;
+    }
+
+    /**
+     * This method returns the current Application name as known by Android's Package Manager
+     * @return value - A String representing the application name.
+     */
+    public String getTozApplicationName() {
+        return (tozApplicationName);
     }
 
     /**

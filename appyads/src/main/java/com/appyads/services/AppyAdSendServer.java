@@ -111,6 +111,7 @@ public class AppyAdSendServer {
             client = (HttpURLConnection) url.openConnection();
 
             // Setup for writing/reading
+            client.setRequestProperty(AppyAdStatic.AARQPROP, AppyAdStatic.AARQPREFX+AppyAdService.getInstance().getApplicationName());
             client.setDoOutput(true);
             client.setFixedLengthStreamingMode(sPars.length());
             output = new OutputStreamWriter(client.getOutputStream());

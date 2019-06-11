@@ -329,6 +329,19 @@ public class AppyAdService {
     }
 
     /**
+     * This method returns the current Application name from the {@link AppyAdManager} object.
+     * @return - A String representing the application name.
+     */
+    public String getApplicationName() {
+        if (!mgrStack.empty()) {
+            AppyAdManager toam = mgrStack.peek();
+            if (toam != null) return (toam.getTozApplicationName());
+            else return ("unknown_a");
+        }
+        else return ("unknown_b");
+    }
+
+    /**
      * This method returns the current account ID being used for the currently visible {@link AppyAdManager} view object.
      * @return - A String representing the account ID.
      */

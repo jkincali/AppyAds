@@ -36,4 +36,7 @@ public class AppyAdStatic {
     public static final int ZOOM_OUT_TO_CENTER = 608;
 
     public static final int NO_ANIMATION = 700;
+
+    public static final String AARQPROP = "Referer";
+    public static final String AARQPREFX = "AppyAdApp_";
 }
