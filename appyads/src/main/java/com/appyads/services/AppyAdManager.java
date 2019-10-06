@@ -609,6 +609,7 @@ public class AppyAdManager extends ViewFlipper {
             AppyAdService.getInstance().debugOut(TAG,"Leaving root internal ad (index=0) displayed (first pass with new ad campaign)");
         }
         else {
+            AppyAdService.getInstance().debugOut(TAG,"Current ad bumped to next index");
             if (nextAd != getDisplayedChild()) {
                 setInAnimation(AppyAdService.getInstance().setAnimation("in", tozAdCampaign.get(nextAd)));
                 setOutAnimation(AppyAdService.getInstance().setAnimation("out", tozAdCampaign.get(curAd)));
@@ -955,7 +956,7 @@ public class AppyAdManager extends ViewFlipper {
      * This method ensures that the refresh interval is neither too small or too large.
      * <ul><li>It must be less than the maximum allowed refresh time (24 hours). If the value is found to be greater than that, it will be re-adjusted to the maximum value.</li></ul>
      * <ul><li>It must be greater than the minimum allowed refresh time (30 seconds). If the current ad campaign duration is less than the minimum refresh interval time, then the refresh interval is set to that minimum value.</li></ul>
-     * <ul><li>It must not be less than the total number of time it takes for one cycle of the current ad campaign.  If the value is found to be less than than, it will be re-adjusted to match the current ad campaign duration.</li></ul>
+     * <ul><li>It must not be less than the total number of time it takes for one cycle of the current ad campaign.  If the value is found to be less than that, it will be re-adjusted to match the current ad campaign duration.</li></ul>
      */
     private void alignRefreshInterval() {
         int totalCampaignDuration = 0;
@@ -1000,17 +1001,19 @@ public class AppyAdManager extends ViewFlipper {
 
         if (tozAdCampaign.size() <= 1) return (retVal);
 
-        AppyAdService.getInstance().debugOut(TAG,"Preparing next Ad... indexes: next="+nextAd+", current="+curAd+", base="+baseAd+", last="+lastAd+", repeatCycle="+repeatCycle);
+        AppyAdService.getInstance().debugOut(TAG,"Preparing next Ad... indexes: current="+curAd+", next="+nextAd+", base="+baseAd+", last="+lastAd+", repeatCycle="+repeatCycle);
 
         if ((repeatCycle != null) && (repeatCycle < 0)) return (false);
 
         if (curAd < lastAd) {
             nextAd = curAd + 1;
             retVal = true;
+            AppyAdService.getInstance().debugOut(TAG,"Prepared next Ad... next="+nextAd);
         }
         else if ((curAd == lastAd) && (curAd != baseViewIndex)) {
             nextAd = baseViewIndex;
             retVal = true;
+            AppyAdService.getInstance().debugOut(TAG,"Prepped next Ad... next="+nextAd+" (Set to base view index, pending repeat cycle check.)");
             if (repeatCycle != null) {
                 repeatCycle--;
                 if (repeatCycle < 0) {
@@ -1018,6 +1021,7 @@ public class AppyAdManager extends ViewFlipper {
                         if (finalViewIndex > lastAd) finalViewIndex = lastAd;
                         if (finalViewIndex < 0) finalViewIndex = 0;
                         nextAd = finalViewIndex;
+                        AppyAdService.getInstance().debugOut(TAG,"Prepared next Ad... next="+nextAd+" (Set to final view index)");
                     }
                 }
             }

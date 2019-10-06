@@ -35,6 +35,7 @@ public class AppyAdRetriever implements Runnable {
 			message.what = controlRsp; // 7;
 			mHandle.sendMessage(message);
 		}
+        try { Thread.sleep(300); } catch(InterruptedException e) { }
 	}
 
     /**
