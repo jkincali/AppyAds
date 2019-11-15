@@ -295,18 +295,19 @@ public class AppyAdService {
                 AppyAdManager toam = mgrStack.peek();
                 if (toam != null) {
                     //toam.declareNoExternalAdSet();
-                    if (xmlDriver.equals("No account information found.")) {
+                    if (xmlDriver.contains("No account information found.")) {
                         debugOut(TAG, "Account ID seemes to be invalid for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
                     }
-                    else if (xmlDriver.equals("No published campaigns found.")) {
+                    else if (xmlDriver.contains("No published campaigns found.")) {
                         debugOut(TAG, "Unable to retrieve any ad campaigns for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
                     }
-                    else if (xmlDriver.equals("Invalid campaign specifiction.")) {
+                    else if (xmlDriver.contains("Invalid campaign specification.")) {
                         debugOut(TAG, "Invalid campaign size specified for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
                     }
                     else {
                         debugOut(TAG, "Received invalid response packet from server for account " + toam.getAccountID() + ", Campaign size " + toam.getCampaignSize() + ".");
                     }
+                    toam.markRefreshed();
                 }
             }
         }
